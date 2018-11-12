@@ -7,9 +7,13 @@ class Encoder
 {
     public:
         Encoder(TIM_TypeDef* TIM);
+        Encoder();
         void reset();
-        int get();
+        short get();
+        short diff();
+        short lastValue;
     private:
+        TIM_TypeDef* TIM;
 };
 
 

@@ -1,21 +1,21 @@
-#include "encoder.h"
+#include "encoder.hpp"
+#include "mbed.h"
 /**
  * Ce fichier gère les encodeurs.
  */
 
 Encoder::Encoder(TIM_TypeDef* _TIM)
 {
-    TIM = _TIM
-    switch (TIM) {
-        case TIM4 :
-            TIM4_EncoderInit();
-            break;
-        case TIM3 :
-            TIM3_EncoderInit();
-            break;
-    }
-}   
+    TIM = _TIM;
+    lastValue = 0;
 
+    if ( TIM == TIM4 ) TIM4_EncoderInit();
+    if ( TIM == TIM3 ) TIM3_EncoderInit();
+
+}
+
+Encoder::Encoder()
+{}
 /**
  *  Initialisation de l'encodeur.
 */
@@ -37,7 +37,7 @@ void TIM4_EncoderInit() {
   TIM4->CCMR1 = 0xC1C1;    // f_DTS/16, N=8, IC1->TI1, IC2->TI2
   TIM4->EGR = 1;           // Generate an update event
   TIM4->CR1 = 1;           // Enable the counter
-  TIM4->CNT = (0xFFFF / 2);          // Initialize counter
+  TIM4->CNT = 0;          // Initialize counter
 }
 
 void TIM3_EncoderInit() {
@@ -58,9 +58,20 @@ void TIM3_EncoderInit() {
   TIM3->CCMR1 = 0xC1C1;    // f_DTS/16, N=8, IC1->TI1, IC2->TI2
   TIM3->EGR = 1;           // Generate an update event
   TIM3->CR1 = 1;           // Enable the counter
-  TIM3->CNT = (0xFFFF / 2);           // Initialize counter
+  TIM3->CNT = 0;           // Initialize counter
 }
 
 void Encoder::reset() {
-  TIM->CNT = (0xFFFF / 2);
+  TIM->CNT = 0;
+}
+
+short Encoder::get() {
+  return TIM->CNT;
+}
+
+short Encoder::diff() {
+  short currentVal = get();
+  short diff = (currentVal - lastValue);
+  lastValue = currentVal;
+  return diff;
 }
