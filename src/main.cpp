@@ -19,7 +19,7 @@ Position pos(&encod_l, &encod_r);
 int main()
 {
   bt.baud(9600);
-  usb.baud(115200);
+  usb.baud(9600);
 
   // while (1) {
   //   printf("%x", usb.getc());
@@ -36,7 +36,7 @@ int main()
 
 
     pos.update();
-    if (compteur % 100 == 0) printf("x : %f ; y : %f ; theta : %f ; el : %d ; er : %d\r", pos.get_x(), pos.get_y(), pos.get_theta(), encod_l.get(), encod_r.get());
+    if (compteur % 100 == 0) printf("x : %fm ; y : %fm ; theta : %f ; el : %d ; er : %d                           \r", pos.get_x(), pos.get_y(), pos.get_theta(), encod_l.get(), encod_r.get());
 
     if (usb.readable()) {
       if (usb.getc() == 'a') {
