@@ -2,7 +2,7 @@
 #include "position.hpp"
 #include "encoder.hpp"
 
-const float D = 10000.0f;
+const float D = 13900;// 0.2200684f * 367.0f; // mm.tick^-1 * distance entre roues
 
 // TODO
 // Ces 6 lignes doivent aller dans un fichier indépendant.
@@ -23,17 +23,17 @@ Position::Position(Encoder* _encod_l, Encoder* _encod_r)
    encod_r = _encod_r;
 }
 
-short Position::get_x()
+float Position::get_x()
 {
     return x;
 }
 
-short Position::get_y()
+float Position::get_y()
 {
     return y;
 }
 
-short Position::get_theta()
+float Position::get_theta()
 {
     return theta;
 }
@@ -43,9 +43,10 @@ void Position::update()
     float dl = (float)encod_l->diff();
     float dr = (float)encod_r->diff();
 
-    float angle = (dr-dl)/D;
-    float dx = (dl + dr)/2.0f;
+    float angle = (dr - dl) / D;
+    float dx = (dl + dr) / 2.0f;
     float dy = 0.0f;
+
     if (abs(angle) > 0.0000175f) {
         float radius = angle * (dl + dr) / 2.0f;
         dx = radius * sin(angle);

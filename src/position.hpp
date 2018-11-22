@@ -8,9 +8,9 @@ class Position
 {
     public:
         Position(Encoder* encod_l, Encoder* encod_r);
-        short get_x();
-        short get_y();
-        short get_theta();
+        float get_x();
+        float get_y();
+        float get_theta();
         void update();
     private:
         float x;

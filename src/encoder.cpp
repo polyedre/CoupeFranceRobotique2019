@@ -73,5 +73,6 @@ short Encoder::diff() {
   short currentVal = get();
   short diff = (currentVal - lastValue);
   lastValue = currentVal;
+  // printf("diff = %d; lastValue = %d, currentVal = %d\r\n", diff, lastValue, currentVal);
   return diff;
 }

@@ -5,6 +5,8 @@
 PwmOut led(LED3);
 DigitalOut led2(LED2);
 Serial bt(PC_12, PD_2);
+Serial usb(USBTX, USBRX);
+
 Timer t0;
 
 PwmOut pwm_r(PF_9);
@@ -17,33 +19,31 @@ Position pos(&encod_l, &encod_r);
 int main()
 {
   bt.baud(9600);
+  usb.baud(115200);
 
-  short x;
-  short y;
+  // while (1) {
+  //   printf("%x", usb.getc());
+  // }
+  printf("\r\nLancement du dev.\r\n");
 
   pwm_r.period(0.000033f);
 
   pwm_r.write(0.2f);
 
+  int compteur = 0;
+
   while (1) {
 
 
-    if (x != 0 || y != 0) led2 = 1;
+    pos.update();
+    if (compteur % 100 == 0) printf("x : %f ; y : %f ; theta : %f ; el : %d ; er : %d\r", pos.get_x(), pos.get_y(), pos.get_theta(), encod_l.get(), encod_r.get());
 
-    // pos.update();
-
-    if (bt.readable()) {
-      if (bt.getc() == 'A') {
-        x = encod_l.get();
-        y = encod_r.get();
-        bt.printf("x : %d - y : %d\n", encod_l.get(), encod_l.lastValue);
-        bt.printf("Valeur : %f -%f\n", encod_l.diff(), encod_r.diff());
-        //  int droite = TIM4->CNT;
-        // bt.printf("%d ", droite);
+    if (usb.readable()) {
+      if (usb.getc() == 'a') {
+        printf("Pos : x = %f ; y = %f ; theta = %f\r\n", pos.get_x(), pos.get_y(), pos.get_theta());
         led2 = 1;
       }
     }
-
   }
 
   return 0;
