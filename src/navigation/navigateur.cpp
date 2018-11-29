@@ -4,7 +4,7 @@ Navigateur::Navigateur(Position *position)
 {
     position = position;
     cible = NULL;
-    angle = NULL;
+    angle_reel = NULL;
 }
 
 void Navigateur::chg_destination(Vecteur2D *c)

@@ -1,5 +1,5 @@
 #include "../position.hpp"
-#include "../vecteur2D.hpp"
+#include "vecteur2D.hpp"
 
 #define NAV_PRECISION 0.01f // Précision de la position en mètres
 
@@ -20,5 +20,5 @@ class Navigateur
     private:
         Position* position;
         Vecteur2D* cible;
-        float angle;
+        float angle_reel;
 };
