@@ -6,11 +6,6 @@
 
 const float D = 13900; // 0.2200684f * 367.0f; // mm.tick^-1 * distance entre roues
 
-// TODO
-// Ces 6 lignes doivent aller dans un fichier indépendant.
-#define PI (3.141592654f)
-#define TWOPI (6.283185307f)
-
 float sg(float val)
 {
     return (val < 0.0f) ? -1.0f : 1.0f;
@@ -45,12 +40,12 @@ float Position::get_theta()
  * */
 void Position::update()
 {
-    float del = encod_l->diff() * SCALE_ENCODER;
-    float der = -encod_r->diff() * SCALE_ENCODER;
+    float del = encod_l->diff() / ENCODEUR_ECHELLE;     // mouvement de l'encodeur gauche en mètres
+    float der = -encod_r->diff() / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
 
     float dx = (del + der) * cos(theta) / 2;
     float dy = (del + der) * sin(theta) / 2;
-    float dTh = (der - del) / (2 * RADIUS);
+    float dTh = (der - del) / RADIUS;
 
     x += dx;
     y += dy;

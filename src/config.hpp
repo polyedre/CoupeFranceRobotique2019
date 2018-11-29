@@ -5,7 +5,8 @@
 
 #define ENCODER_TIM_RIGHT TIM3
 
-#define RADIUS 0.367f         // largeur en mètres entre les deux encodeurs
-#define SCALE_ENCODER 0.0002200684f // longeur en mètres d'un incrément des encodeurs
+#define PI 3.141592653589793
+#define RADIUS 0.367f // largeur en mètres entre les deux encodeurs
+#define ENCODEUR_ECHELLE 43723.0f             // tick par mètres
 
 #endif // __CONFIG_H_
