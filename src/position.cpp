@@ -13,27 +13,25 @@ float sg(float val)
 
 Position::Position(Encoder *_encod_l, Encoder *_encod_r)
 {
-    x = 0;
-    y = 0;
-    theta = 0;
+    RT_x = 0;
+    RT_y = 0;
+    RT_theta = 0;
     encod_l = _encod_l;
     encod_r = _encod_r;
+    temps = new Timer();
 }
 
 float Position::get_x()
 {
-    return x;
+    return RT_x;
 }
 
 float Position::get_y()
 {
-    return y;
+    return RT_y;
 }
 
-float Position::get_theta()
-{
-    return theta;
-}
+float Position::get_theta() { return RT_theta; }
 
 /**
  * Nouveau modèle de déplacement élémentaire centré autour du milieu des deux encodeurs.
@@ -43,11 +41,16 @@ void Position::update()
     float del = encod_l->diff() / ENCODEUR_ECHELLE;     // mouvement de l'encodeur gauche en mètres
     float der = -encod_r->diff() / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
 
-    float dx = (del + der) * cos(theta) / 2;
-    float dy = (del + der) * sin(theta) / 2;
+    float dx = (del + der) * cos(RT_theta) / 2;
+    float dy = (del + der) * sin(RT_theta) / 2;
     float dTh = (der - del) / RADIUS;
 
-    x += dx;
-    y += dy;
-    theta += dTh;
+    RT_x += dx;
+    RT_y += dy;
+    RT_theta += dTh;
+
+    vit_encod_d = der / temps->read_ms();
+    vit_encod_g = del / temps->read_ms();
+
+    temps->reset();
 }

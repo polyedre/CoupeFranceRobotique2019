@@ -1,6 +1,6 @@
 #include "navigateur.hpp"
 
-Navigateur::Navigateur(Position *position)
+Navigateur::Navigateur(Position *position, Controleur* controleur)
 {
     position = position;
     cible = NULL;

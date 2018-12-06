@@ -1,6 +1,7 @@
 #include "mbed.h"
 #include "encoder.hpp"
 #include "position.hpp"
+#include "asservissement/moteurs.hpp"
 
 PwmOut led(LED3);
 DigitalOut led2(LED2);
@@ -9,12 +10,14 @@ Serial usb(USBTX, USBRX);
 
 Timer t0;
 
-PwmOut pwm_r(PF_9);
+PwmOut pwm_moteur_droit(PB_15);
+PwmOut pwm_moteur_gauche(PB_13);
 
 Encoder encod_l(TIM4);
 Encoder encod_r(TIM3);
 
 Position pos(&encod_l, &encod_r);
+Controleur controleur(&pos);
 
 int main()
 {
@@ -26,10 +29,17 @@ int main()
   // }
   printf("\r\nLancement du dev.\r\n");
 
-  pwm_r.period(0.000033f);
+  pwm_moteur_droit.period(0.000033f);
+  pwm_moteur_gauche.period(0.000033f);
 
-  pwm_r.write(0.2f);
 
+  while(1){
+    controleur.avancer(1000);
+    wait(2);
+  }
+
+  //pwm_r.write(0);
+  /*
   int compteur = 0;
 
   while (1) {
@@ -45,6 +55,6 @@ int main()
       }
     }
   }
-
+  */
   return 0;
 }

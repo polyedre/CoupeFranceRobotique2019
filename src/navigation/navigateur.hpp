@@ -1,5 +1,6 @@
-#include "../position.hpp"
-#include "vecteur2D.hpp"
+#include "position.hpp"
+#include "navigation/vecteur2D.hpp"
+#include "asservissement/moteurs.hpp"
 
 #define NAV_PRECISION 0.01f // Précision de la position en mètres
 
@@ -10,7 +11,7 @@
 class Navigateur
 {
     public:
-        Navigateur(Position* position);
+        Navigateur(Position* position, Controleur* controleur);
         /**
          * Définit "cible" comme nouveau point à atteindre par le navigateur.
          */
@@ -19,6 +20,7 @@ class Navigateur
 
     private:
         Position* position;
+        Controleur* controleur;
         Vecteur2D* cible;
         float angle_reel;
 };
