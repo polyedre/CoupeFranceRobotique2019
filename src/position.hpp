@@ -12,6 +12,8 @@ class Position
         float get_y();
         float get_theta();
         void update();
+        void reset();
+        void init();
     private:
         float x;
         float y;

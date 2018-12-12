@@ -60,3 +60,12 @@ void Position::update()
 
 }
 
+void Position::init(){
+    reset();
+}
+
+void Position::reset(){
+    x = 0;
+    y = 0;
+    theta = 0;
+}
