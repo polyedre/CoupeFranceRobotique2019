@@ -22,6 +22,7 @@ int main()
 
   while (!pid_distance.actionFinished) {
 
+    pid_distance.pos.update();
     float destination_x = pid_distance.commande_x;
     float destination_y = pid_distance.commande_y;
     float x = pid_distance.pos.get_x();
@@ -32,14 +33,13 @@ int main()
 
     wait(0.1);
     float consigne_distance = pid_distance.getConsigne();
-    printf("Consigne : %f, x : %f, y : %f, theta : %f, erreur : %f\r\n",
-           consigne_distance, x,
-           y, theta,
+    float consigne_angle = pid_distance.getConsigne();
+
+    printf("Consigne distance : %f\r\nConsigne angle : %f\r\nx : %f, y : %f, theta : %f\r\nerreur : %f\r\n",
+           consigne_distance, consigne_angle,
+           x, y, theta,
            pid_distance.erreur);
 
-    pid_distance.pos.x += consigne_distance * cos(theta);
-    pid_distance.pos.y += consigne_distance * sin(theta);
-    pid_distance.pos.theta += pid_angle.getConsigne();
   }
 
   return 0;
