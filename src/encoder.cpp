@@ -8,6 +8,7 @@ Encoder::Encoder(TIM_TypeDef* _TIM)
 {
     TIM = _TIM;
     lastValue = 0;
+    total = 0;
 
     if ( TIM == TIM4 ) TIM4_EncoderInit();
     if ( TIM == TIM3 ) TIM3_EncoderInit();
@@ -72,6 +73,7 @@ short Encoder::get() {
 short Encoder::diff() {
   short currentVal = get();
   short diff = (currentVal - lastValue);
+  total += diff;
   lastValue = currentVal;
   // printf("diff = %d; lastValue = %d, currentVal = %d\r\n", diff, lastValue, currentVal);
   return diff;

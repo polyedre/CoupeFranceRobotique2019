@@ -17,7 +17,7 @@ Encoder encod_l(TIM4);
 Encoder encod_r(TIM3);
 
 Position pos(&encod_l, &encod_r);
-Controleur controleur(&pos);
+Controleur controleur(&pos, &pwm_moteur_droit, &pwm_moteur_gauche);
 
 int main()
 {
@@ -34,7 +34,7 @@ int main()
 
 
   while(1){
-    controleur.avancer(1000);
+    controleur.avancer(10000);
     wait(2);
   }
 

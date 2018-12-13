@@ -12,6 +12,7 @@ class Encoder
         short get();
         short diff();
         short lastValue;
+        int total;
     private:
         TIM_TypeDef* TIM;
 };

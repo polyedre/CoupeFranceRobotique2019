@@ -1,47 +1,49 @@
 #include "asservissement/moteurs.hpp"
 #include <cmath>
 
-#define PuissanceMax 0.1f
-#define Limite 1000
+#define PuissanceMax 0.2f
+#define Limite 10000
 
-Controleur::Controleur(Position *pos) {
+Controleur::Controleur(Position *pos, PwmOut *moteur_d, PwmOut *moteur_g) {
   puissance = 0;
   position = pos;
-  moteur_droit = new PwmOut(PIN_Moteur_droit);
-  moteur_gauche = new PwmOut(PIN_Moteur_gauche);
+  moteur_droit = moteur_d;
+  moteur_gauche = moteur_g;
 }
 
 /** Avance sur la distance demandée en conservant le robot droit */
 void Controleur::avancer(float distance) {
-  int parcours_d = 0;
-  int parcours_g = 0;
-  int encodeur_d = position->encod_r->get();
-  int encodeur_g = position->encod_l->get();
+  position->encod_l->total = 0;
+  position->encod_r->total = 0;
 
-  double ecart_d = abs(distance - parcours_d);
-  double ecart_g = abs(distance - parcours_g);
+  int ecart_d = distance - position->encod_r->total;
+  int ecart_g = distance - position->encod_l->total;
 
   while (ecart_d > 0 || ecart_g > 0) {
     if (ecart_d > Limite) {
       moteur_droit->write(PuissanceMax);
-      printf("Puissance: %f     \r", PuissanceMax);
+      printf("\rTotal: %d,\tPuissance: %f     ", position->encod_r->total,
+             PuissanceMax);
     } else {
-      moteur_droit->write(PuissanceMax * ecart_d / Limite);
-      printf("puissance: %f     \r", PuissanceMax * ecart_d / Limite);
+      moteur_droit->write(PuissanceMax * (float)ecart_d / Limite);
+      printf("\rTotal:%d,\tpuissance: %f     ", position->encod_r->total,
+             PuissanceMax * ecart_d / Limite);
     }
 
-    /*if (ecart_g > Limite) {
+    if (ecart_g > Limite) {
       moteur_gauche->write(PuissanceMax);
     } else {
-      moteur_gauche->write(PuissanceMax * ecart_g / Limite);
-    }*/
-
-    parcours_d = abs(position->encod_r->get() - encodeur_d);
-    parcours_g = abs(position->encod_l->get() - encodeur_g);
-    //printf("cote droit: %d \t cote gauche: %d       \r", parcours_d, parcours_g);
-    ecart_d = abs(distance - parcours_d);
-    ecart_g = abs(distance - parcours_g);
+      moteur_gauche->write(PuissanceMax * (float)ecart_g / Limite);
+    }
+    // printf("cote droit: %d \t cote gauche: %d       \r", parcours_d,
+    // parcours_g);
+    position->update();
+    ecart_d = distance + position->encod_r->total;
+    ecart_g = distance - position->encod_l->total;
   }
+
+  moteur_droit->write(0);
+  moteur_gauche->write(0);
 }
 
 /** Fait tourner le robot sur lui-même */

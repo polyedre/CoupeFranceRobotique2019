@@ -8,7 +8,7 @@
 class Controleur
 {
     public:
-        Controleur(Position* position);
+        Controleur(Position* position, PwmOut* moteur_droit, PwmOut* moteur_gauche);
         void avancer(float distance);
         void rotation(float angle);
 
