@@ -14,6 +14,8 @@ float sg(float val)
 	return (val < 0.0f) ? -1.0f : 1.0f;
 }
 
+Position::Position(){}
+
 Position::Position(Encoder* _encod_l, Encoder* _encod_r)
 {
    x = 0;

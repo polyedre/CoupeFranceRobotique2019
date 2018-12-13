@@ -7,6 +7,7 @@
 class Position
 {
     public:
+        Position();
         Position(Encoder* encod_l, Encoder* encod_r);
         float get_x();
         float get_y();
@@ -14,7 +15,7 @@ class Position
         void update();
         void reset();
         void init();
-    private:
+    // private:
         float x;
         float y;
         float theta;
