@@ -9,7 +9,7 @@ float calculerAngle(float x1, float y1, float x2, float y2);
 class PID { // PID asservissement en position
     public:
         PID();
-        PID(float p, float i, float d, float erreurSeuil, float accumulateurSeuil);
+        PID(float p, float i, float d, float erreurSeuil, float accumulateurSeuil, Position* position);
         void AccumulerErreur(float erreur);
         float calculerConsigne();
         float getConsigne();
@@ -39,7 +39,8 @@ class PID { // PID asservissement en position
 
 class PIDDistance : public PID {
     public:
-        PIDDistance(float p, float i, float d, float erreurSeuil, float accumulateurSeuil);
+        PIDDistance();
+        PIDDistance(float p, float i, float d, float erreurSeuil, float accumulateurSeuil, Position* position);
 
         float calculerErreur();
         void setCommande(float x, float y);
@@ -51,7 +52,8 @@ class PIDDistance : public PID {
 
 class PIDAngle : public PID {
     public:
-        PIDAngle(float p, float i, float d, float erreurSeuil, float accumulateurSeuil);
+        PIDAngle();
+        PIDAngle(float p, float i, float d, float erreurSeuil, float accumulateurSeuil, Position* position);
 
         float calculerErreur();
         void setCommande(float theta);

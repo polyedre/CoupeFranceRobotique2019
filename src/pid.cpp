@@ -9,7 +9,9 @@
 
 /* --- PID général --- */
 
-PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurMax){
+PID::PID(){}
+
+PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurMax, Position* position){
 
     p = _p;
     i = _i;
@@ -18,9 +20,7 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurMa
     accumulateur = 0;
     actionFinished = 0;
 
-    Encoder encod_l(TIM4);
-    Encoder encod_r(TIM3);
-    pos = Position(&encod_l, &encod_r);
+    pos = *position;
 
     accumulateurMax = _accumulateurMax;
     erreurSeuil = _erreurSeuil;
@@ -55,8 +55,10 @@ void PID::reset(){
 
 /* --- PID en DISTANCE --- */
 
-PIDDistance::PIDDistance(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil) :
-    PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil) {}
+PIDDistance::PIDDistance(){}
+
+PIDDistance::PIDDistance(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil, Position* position) :
+    PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, position) {}
 
 // FIXME : Fonction mal placée
 float carre(float a){
@@ -82,8 +84,10 @@ void PIDDistance::setCommande(float x, float y){
 
 /* --- PID en ANGLE --- */
 
-PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil) :
-    PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil) {}
+PIDAngle::PIDAngle(){}
+
+PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil, Position* position) :
+    PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, position) {}
 
 float PIDAngle::calculerErreur(){
    float theta = pos.get_theta();

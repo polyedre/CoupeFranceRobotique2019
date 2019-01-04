@@ -1,4 +1,5 @@
-
+#ifndef VECTEUR_2D
+#define VECTEUR_2D
 /**
  * Un vecteur 2 dimensions est défini par deux flottants.
  */
@@ -19,3 +20,5 @@ class Vecteur2D
 
 /** Détermine l'angle entre l'axe Ox et le vecteur (point_x, point_y) */
 float angle(float point_x, float point_y);
+
+#endif
