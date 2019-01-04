@@ -4,6 +4,7 @@
 #include "mbed.h"
 #include "encoder.hpp"
 
+/** Classe pour mesurer la position du robot. */
 class Position
 {
     public:

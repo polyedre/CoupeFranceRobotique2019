@@ -15,8 +15,7 @@ int main()
   // bt.baud(9600); // Bluetooth
   usb.baud(115200); // USB
 
-  printf("\r\nInitialisation du programme.\r\n");
-
+  usb.printf("\r\nInitialisation du programme.\r\n");
 
   pid_distance.setCommande(1, 1);
 
@@ -40,6 +39,7 @@ int main()
            x, y, theta,
            pid_distance.erreur);
 
+    pos.update();
   }
 
   return 0;
