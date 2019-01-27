@@ -1,6 +1,7 @@
 #include "../position.hpp"
 #include "vecteur2D.hpp"
 #include "../pid.hpp"
+#include "mbed.h"
 
 #define NAV_PRECISION 0.01f // Précision de la position en mètres
 
@@ -12,7 +13,7 @@ class Navigateur
 {
     public:
         Navigateur();
-        Navigateur(Position* position);
+        Navigateur(Position* position, PwmOut *m_l, PwmOut *m_r);
         /**
          * Définit "cible" comme nouveau point à atteindre par le navigateur.
          */
@@ -25,4 +26,7 @@ class Navigateur
         float angle_reel;
         PIDDistance pid_d;
         PIDAngle pid_a;
+        PwmOut* m_l;
+        PwmOut* m_r;
+
 };

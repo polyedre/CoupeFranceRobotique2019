@@ -12,8 +12,11 @@ Serial usb(USBTX, USBRX);
 Encoder enc_l(TIM4);
 Encoder enc_r(TIM3);
 
+PwmOut motor_l(PB_13); // TODO changer les noms des pins
+PwmOut motor_r(PB_15);
+
 Position pos(&enc_l, &enc_r);
-Navigateur nav(&pos);
+Navigateur nav(&pos, &motor_l, &motor_r);
 
 int main()
 {
@@ -22,8 +25,22 @@ int main()
 
   usb.printf("\r\nInitialisation du programme.\r\n");
 
-  Vecteur2D destination(1,1);
+  (&motor_l)->write(0.5f);
+  wait(1);
+  motor_l.write(0.0f);
+  motor_r.write(0.5f);
+  wait(1);
+  motor_r.write(0.0f);
+
+  Vecteur2D destination(1,0);
+
   nav.set_destination(&destination);
+
+  int compteur = 0;
+  while (1) {
+    wait(0.5);
+    nav.update();
+  }
 
   return 0;
 }

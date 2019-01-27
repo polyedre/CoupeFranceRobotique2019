@@ -31,10 +31,10 @@ class PID { // PID asservissement en position
 
         short actionFinished;
 
-        Position pos;
+        Position* pos;
 
         Timer time;
-        float accumulateurMax;
+        float accumulateurSeuil;
 };
 
 class PIDDistance : public PID {

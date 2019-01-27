@@ -1,6 +1,7 @@
 #include "pid.hpp"
 #include "position.hpp"
 #include "encoder.hpp"
+#include "config.hpp"
 #include <queue>
 #include <math.h>
 
@@ -11,7 +12,7 @@
 
 PID::PID(){}
 
-PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurMax, Position* position){
+PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil, Position* position){
 
     p = _p;
     i = _i;
@@ -20,9 +21,9 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurMa
     accumulateur = 0;
     actionFinished = 0;
 
-    pos = *position;
+    pos = position;
 
-    accumulateurMax = _accumulateurMax;
+    accumulateurSeuil = _accumulateurSeuil;
     erreurSeuil = _erreurSeuil;
     time.start();
 }
@@ -33,7 +34,7 @@ float PID::calculerConsigne(){
 }
 
 void PID::AccumulerErreur(float erreur){
-    if (accumulateur < accumulateurMax) accumulateur += erreur;
+    if (accumulateur < accumulateurSeuil) accumulateur += erreur;
 }
 
 float PID::getConsigne(){
@@ -66,8 +67,8 @@ float carre(float a){
 }
 
 float PIDDistance::calculerErreur(){
-   float x = pos.get_x();
-   float y = pos.get_y();
+   float x = pos->get_x();
+   float y = pos->get_y();
 
    float err = sqrt(carre(x - commande_x) + carre(y - commande_y));
    fifo.push(err);
@@ -90,10 +91,11 @@ PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accu
     PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, position) {}
 
 float PIDAngle::calculerErreur(){
-   float theta = pos.get_theta();
+   float theta = pos->get_theta();
    float err = commande_theta - theta; // TODO vérifier le sens !
    fifo.push(err);
    fifo.pop();
+   printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
    return err;
 }
 
@@ -104,5 +106,7 @@ void PIDAngle::setCommande(float theta){
 
 float calculerAngle(float x1, float y1, float x2, float y2)
 {
-    return acos((x2-x1)/(y2-y1));
+    if ((y2-y1) < 0.001f) return 0;
+
+    return asin((x2-x1)/(y2-y1));
 }

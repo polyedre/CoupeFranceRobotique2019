@@ -1,17 +1,20 @@
 #include "navigateur.hpp"
 #include <stdio.h>
 
-Navigateur::Navigateur(Position *position)
+Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r)
 {
-    position = position;
+    position = _position;
     cible = NULL;
 
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(1, 1, 1, 1, 1, position);
-    PIDAngle _pid_a(1, 1, 1, 1, 1, position);
+    PIDDistance _pid_d(1, 1, 1, 0.05, 1, position);
+    PIDAngle _pid_a(1, 1, 1, 0.02, 100, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
+
+    m_l = _m_l;
+    m_r = _m_r;
 }
 
 void Navigateur::set_destination(Vecteur2D *c)
@@ -19,6 +22,12 @@ void Navigateur::set_destination(Vecteur2D *c)
     // FIXME : supprimer la variable cible ?
     cible = c;
     pid_d.setCommande(cible->x(), cible->y());
+}
+
+
+void limiter_consigne(float* consigne){
+    if (*consigne > 1) *consigne = 1;
+    else if (*consigne < 0) *consigne = 0;
 }
 
 void Navigateur::update()
@@ -32,25 +41,32 @@ void Navigateur::update()
     float y = position->get_y();
     float theta = position->get_theta();
 
-    float angle_relatif = calculerAngle(x, y, cible->x(), cible->y());
+    printf("%f, %f, %f\r\n", x, y, theta);
+    printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur, pid_a.accumulateur);
 
-    if (angle_relatif < 30) {
-    pid_a.setCommande(angle_relatif);
+    float angle_absolu_destination = calculerAngle(x, y, cible->x(), cible->y());
 
-    float dist_cons = pid_d.getConsigne();
+    float angle_relatif = angle_absolu_destination - theta;
+
+    // Calcul Consigne pour angle avec angle cible rafraichie
+    pid_a.setCommande(angle_absolu_destination);
     float angle_cons = pid_a.getConsigne();
+    float dist_cons = 0;
+
+    // Si la cible appartient à un cône de vision
+    // alors on calcule la consigne de distance
+    if (angle_relatif < 2.5f) dist_cons = pid_d.getConsigne();
 
     float cmr = dist_cons + angle_cons; // Consigne moteur droit
     float cml = dist_cons - angle_cons; // Consigne moteur gauche
 
-    } else {
+    limiter_consigne(&cmr);
+    limiter_consigne(&cml);
 
-    // TODO : implémenter rotation simple
+    printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
-    }
-
-    // TODO : implémenter le travail des moteurs
-
+    m_l->write(cml);
+    m_r->write(cmr);
     }
 
 }
