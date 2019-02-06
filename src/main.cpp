@@ -9,8 +9,8 @@
 DigitalOut led(LED3);
 Serial usb(USBTX, USBRX);
 
-Encoder enc_l(TIM4);
-Encoder enc_r(TIM3);
+Encoder enc_l(TIM4); // PD12 - PD13
+Encoder enc_r(TIM3); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
 
 PwmOut motor_l(PB_13); // TODO changer les noms des pins
 PwmOut motor_r(PB_15);
@@ -25,12 +25,12 @@ int main()
 
   usb.printf("\r\nInitialisation du programme.\r\n");
 
-  (&motor_l)->write(0.5f);
-  wait(1);
-  motor_l.write(0.0f);
-  motor_r.write(0.5f);
-  wait(1);
-  motor_r.write(0.0f);
+  // (&motor_l)->write(0.5f);
+  // wait(1);
+  // motor_l.write(0.0f);
+  // motor_r.write(0.5f);
+  // wait(1);
+  // motor_r.write(0.0f);
 
   Vecteur2D destination(1,0);
 

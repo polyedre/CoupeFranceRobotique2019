@@ -30,6 +30,10 @@ void limiter_consigne(float* consigne){
     else if (*consigne < 0) *consigne = 0;
 }
 
+float max(float a, float b) {
+    return a < b ? b : a;
+}
+
 void Navigateur::update()
 {
 
@@ -65,8 +69,8 @@ void Navigateur::update()
 
     printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
-    m_l->write(cml);
-    m_r->write(cmr);
+    m_l->write(max(cml, 0.7));
+    m_r->write(max(cmr, 0.7));
     }
 
 }
