@@ -14,8 +14,7 @@ Encoder::Encoder(TIM_TypeDef* _TIM)
 
 }
 
-Encoder::Encoder()
-{}
+Encoder::Encoder(){}
 /**
  *  Initialisation de l'encodeur.
 */
