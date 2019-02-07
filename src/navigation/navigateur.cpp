@@ -30,9 +30,12 @@ void Navigateur::set_destination(Vecteur2D *c)
 }
 
 
-void limiter_consigne(float* consigne){
+void limiter_consigne(float* consigne, DigitalOut direction){
     if (*consigne > 1) *consigne = 1;
-    else if (*consigne < 0) *consigne = 0;
+    else if (*consigne < 0) {
+    *consigne *= -1;
+    *direction == 1 ? 0 : 1; // On inverse le moteur
+    }
 }
 
 float min (float a, float b) {
@@ -70,16 +73,21 @@ void Navigateur::update()
     float cmr = dist_cons + angle_cons; // Consigne moteur droit
     float cml = dist_cons - angle_cons; // Consigne moteur gauche
 
-    limiter_consigne(&cmr);
-    limiter_consigne(&cml);
-
-    cmr = min(cmr, 0.2);
-    cml = min(cml, 0.2);
-
-    // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
-
+    /*
+      Initialisation des directions pour que les moteurs tournent dans
+      le même sens. On inverse ensuite selon la consigne lors de l'appel
+      à `limiter_consigne`.
+      */
     *d_l = 0;
     *d_r = 1;
+
+    limiter_consigne(&cmr, d_r);
+    limiter_consigne(&cml, d_l);
+
+    cmr = min(cmr, 0.4);
+    cml = min(cml, 0.4);
+
+    // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
     m_l->write(cml);
     m_r->write(cmr);
