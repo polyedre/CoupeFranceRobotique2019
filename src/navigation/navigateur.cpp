@@ -1,7 +1,7 @@
 #include "navigateur.hpp"
 #include <stdio.h>
 
-Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r)
+Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r)
 {
     position = _position;
     cible = NULL;
@@ -15,6 +15,11 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r)
 
     m_l = _m_l;
     m_r = _m_r;
+    m_l->period(PWM_PERIOD);
+    m_r->period(PWM_PERIOD);
+    d_l = _d_l;
+    d_r = _d_r;
+
 }
 
 void Navigateur::set_destination(Vecteur2D *c)
@@ -72,6 +77,9 @@ void Navigateur::update()
     cml = min(cml, 0.2);
 
     printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
+
+    *d_l = 0;
+    *d_r = 1;
 
     m_l->write(cml);
     m_r->write(cmr);
