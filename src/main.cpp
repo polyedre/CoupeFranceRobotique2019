@@ -24,6 +24,7 @@ int main()
   usb.baud(115200); // USB
 
   usb.printf("\r\nInitialisation du programme.\r\n");
+  usb.printf("\r\nNouveau code ?.\r\n");
 
   // (&motor_l)->write(0.5f);
   // wait(1);

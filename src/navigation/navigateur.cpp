@@ -30,8 +30,8 @@ void limiter_consigne(float* consigne){
     else if (*consigne < 0) *consigne = 0;
 }
 
-float max(float a, float b) {
-    return a < b ? b : a;
+float min (float a, float b) {
+    return (a > b) ? b : a;
 }
 
 void Navigateur::update()
@@ -45,8 +45,9 @@ void Navigateur::update()
     float y = position->get_y();
     float theta = position->get_theta();
 
-    printf("%f, %f, %f\r\n", x, y, theta);
-    printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur, pid_a.accumulateur);
+    printf("x = %f, y = %f, theta=%f\n", x, y, theta);
+    // printf("%f, %f, %f\r\n", x, y, theta);
+    // printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur, pid_a.accumulateur);
 
     float angle_absolu_destination = calculerAngle(x, y, cible->x(), cible->y());
 
@@ -67,10 +68,13 @@ void Navigateur::update()
     limiter_consigne(&cmr);
     limiter_consigne(&cml);
 
+    cmr = min(cmr, 0.2);
+    cml = min(cml, 0.2);
+
     printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
-    m_l->write(max(cml, 0.7));
-    m_r->write(max(cmr, 0.7));
+    m_l->write(cml);
+    m_r->write(cmr);
     }
 
 }
