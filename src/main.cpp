@@ -24,7 +24,6 @@ int main()
   usb.baud(115200); // USB
 
   usb.printf("\r\nInitialisation du programme.\r\n");
-  usb.printf("\r\nNouveau code ?.\r\n");
 
   // (&motor_l)->write(0.5f);
   // wait(1);
@@ -33,14 +32,17 @@ int main()
   // wait(1);
   // motor_r.write(0.0f);
 
-  Vecteur2D destination(1,0);
+  // Vecteur2D destination(1,0);
 
-  nav.set_destination(&destination);
+  // nav.set_destination(&destination);
+
+
 
   int compteur = 0;
   while (1) {
     wait(0.5);
     nav.update();
+    nav.print_pos();
   }
 
   return 0;

@@ -19,6 +19,7 @@ class Navigateur
          */
         void set_destination(Vecteur2D* cible);
         void update();
+        void print_pos();
 
     private:
         Position* position;

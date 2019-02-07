@@ -71,10 +71,15 @@ void Navigateur::update()
     cmr = min(cmr, 0.2);
     cml = min(cml, 0.2);
 
-    printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
+    // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
     m_l->write(cml);
     m_r->write(cmr);
     }
 
+}
+
+void Navigateur::print_pos()
+{
+    printf("(x, y, theta) = (%s, %s, %s)\n", position->get_x(), position->get_y(), position->get_theta());
 }
