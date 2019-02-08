@@ -20,9 +20,9 @@ class Navigateur
         void set_destination(Vecteur2D* cible);
         void update();
         void print_pos();
+        Position* position;
 
     private:
-        Position* position;
         Vecteur2D* cible;
         float angle_reel;
         PIDDistance pid_d;

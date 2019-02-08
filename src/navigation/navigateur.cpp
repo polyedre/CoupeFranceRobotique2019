@@ -7,8 +7,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     cible = NULL;
 
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(1, 1, 1, 0.05, 1, position);
-    PIDAngle _pid_a(1, 1, 1, 0.02, 100, position);
+    PIDDistance _pid_d(1, 1, 1, 0.20, 1, position);
+    PIDAngle _pid_a(5, 1, 1, 0.02, 100, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -30,11 +30,11 @@ void Navigateur::set_destination(Vecteur2D *c)
 }
 
 
-void limiter_consigne(float* consigne, DigitalOut direction){
+void limiter_consigne(float* consigne, DigitalOut *direction){
     if (*consigne > 1) *consigne = 1;
     else if (*consigne < 0) {
     *consigne *= -1;
-    *direction == 1 ? 0 : 1; // On inverse le moteur
+    *direction == 1 ? *direction = 0 : *direction = 1; // On inverse le moteur
     }
 }
 
@@ -53,7 +53,7 @@ void Navigateur::update()
     float y = position->get_y();
     float theta = position->get_theta();
 
-    printf("x = %f, y = %f, theta=%f\n", x, y, theta);
+    // printf("x = %f, y = %f, theta=%f\n", x, y, theta);
     // printf("%f, %f, %f\r\n", x, y, theta);
     // printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur, pid_a.accumulateur);
 
@@ -88,6 +88,7 @@ void Navigateur::update()
     cml = min(cml, 0.4);
 
     // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
+    printf("(cmr, cml, cons) = (%.2f, %.2f, %.2f)\n", cmr, cml, angle_cons);
 
     m_l->write(cml);
     m_r->write(cmr);
@@ -97,5 +98,5 @@ void Navigateur::update()
 
 void Navigateur::print_pos()
 {
-    printf("(x, y, theta) = (%s, %s, %s)\n", position->get_x(), position->get_y(), position->get_theta());
+    printf("(x, y, theta) = (%.2f, %.2f, %.2f)\n", position->get_x(), position->get_y(), position->get_theta());
 }

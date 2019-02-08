@@ -39,7 +39,10 @@ void PID::AccumulerErreur(float erreur){
 
 float PID::getConsigne(){
     erreur = this->calculerErreur();
-    if (erreur < erreurSeuil) actionFinished = 1;
+    if (erreur < erreurSeuil) {
+        actionFinished = 1;
+        printf("TRIGGER");
+    }
     AccumulerErreur(erreur);
     return calculerConsigne();
 }
@@ -95,7 +98,7 @@ float PIDAngle::calculerErreur(){
    float err = commande_theta - theta; // TODO vérifier le sens !
    fifo.push(err);
    fifo.pop();
-   printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
+   // printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
    return err;
 }
 

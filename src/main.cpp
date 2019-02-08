@@ -37,17 +37,18 @@ int main()
   // wait(1);
   // motor_r.write(0.0f);
 
-  // Vecteur2D destination(1,0);
+  wait(1);
 
-  // nav.set_destination(&destination);
+  Vecteur2D destination(1,1);
 
+  nav.set_destination(&destination);
 
 
   int compteur = 0;
   while (1) {
-    wait(0.5);
     nav.update();
-    nav.print_pos();
+    // if (compteur % 10000 == 0) nav.print_pos();
+    compteur++;
   }
 
   return 0;

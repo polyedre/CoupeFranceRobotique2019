@@ -4,7 +4,7 @@
 #include <cmath>
 #include "config.hpp"
 
-const float D = 13900; // 0.2200684f * 367.0f; // mm.tick^-1 * distance entre roues
+// const float D = 13900; // 0.2200684f * 367.0f; // mm.tick^-1 * distance entre roues
 
 float sg(float val)
 {
@@ -43,11 +43,15 @@ float Position::get_theta()
 void Position::update()
 {
     float del = encod_l->diff() / ENCODEUR_ECHELLE;     // mouvement de l'encodeur gauche en mètres
-    float der = -encod_r->diff() / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
+    float der = encod_r->diff() / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
 
-    float dx = (del + der) * cos(theta) / 2;
-    float dy = (del + der) * sin(theta) / 2;
-    float dTh = (der - del) / RADIUS;
+    float dx = (del + der) / 2 * cos(theta);
+    float dy = (del + der) / 2 * sin(theta);
+    float dTh =(der - del) / DIAMETER;
+
+    // printf("(dx, del, der) = (%f, %f, %f)\n", dx, del, der);
+
+    // TODO : mettre un modulo
 
     x += dx;
     y += dy;
