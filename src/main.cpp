@@ -39,17 +39,47 @@ int main()
 
   wait(1);
 
-  Vecteur2D destination(1,1);
+  // for (float i = 0; i < 0.4; i += 0.001) {
+  //   motor_r.write(i);
+  //   printf("\r%f", i);
+  //   wait(0.1);
+  // }
 
-  nav.set_destination(&destination);
+  usb.printf("\r\nDébut rotation directe.\r\n");
+
+  nav.rotate_by(1.57f);
+
+  nav.print_pos();
+
+  usb.printf("\r\nRotation Terminée.\r\n");
+  usb.printf("\r\nDébut rotation indirecte.\r\n");
+
+  motor_l.write(0);
+  motor_r.write(0);
+
+  wait(1);
+
+  nav.rotate_by(-1.57f);
+
+  nav.print_pos();
+
+  usb.printf("\r\nRotation Terminée.\r\n");
+  usb.printf("\r\nAction Terminée.\r\n");
+
+  motor_l.write(0);
+  motor_r.write(0);
+
+  // Vecteur2D destination(1,1);
+
+  // nav.set_destination(&destination);
 
 
-  int compteur = 0;
-  while (1) {
-    nav.update();
-    // if (compteur % 10000 == 0) nav.print_pos();
-    compteur++;
-  }
+  // int compteur = 0;
+  // while (1) {
+  //   nav.update();
+  //   // if (compteur % 10000 == 0) nav.print_pos();
+  //   compteur++;
+  // }
 
   return 0;
 }

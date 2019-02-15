@@ -12,4 +12,6 @@
 #define ENCODEUR_ECHELLE 45703.0f // tick par mètres
 // Ancienne valeur : 43723.0f // tick par mètres
 
+#define CONSIGNE_MAX 0.4f
+
 #endif // __CONFIG_H_

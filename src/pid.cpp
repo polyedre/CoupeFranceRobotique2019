@@ -6,7 +6,7 @@
 #include <math.h>
 
 // Durée de la rampe en seconde
-#define RAMPE_LENGHT 5.0f
+#define RAMPE_LENGHT 2.0f
 
 /* --- PID général --- */
 

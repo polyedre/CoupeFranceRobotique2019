@@ -21,6 +21,7 @@ class Navigateur
         void update();
         void print_pos();
         Position* position;
+        void rotate_by(float angle);
 
     private:
         Vecteur2D* cible;

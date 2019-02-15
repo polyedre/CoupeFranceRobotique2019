@@ -1,5 +1,7 @@
 #include "navigateur.hpp"
 #include <stdio.h>
+#include "../config.hpp"
+
 
 Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r)
 {
@@ -8,7 +10,7 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
 
     // FIXME : Trouver bonnes valeurs de pid.
     PIDDistance _pid_d(1, 1, 1, 0.20, 1, position);
-    PIDAngle _pid_a(5, 1, 1, 0.02, 100, position);
+    PIDAngle _pid_a(2, 0.0000, 1, 0.02, 0, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -19,7 +21,6 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     m_r->period(PWM_PERIOD);
     d_l = _d_l;
     d_r = _d_r;
-
 }
 
 void Navigateur::set_destination(Vecteur2D *c)
@@ -31,11 +32,11 @@ void Navigateur::set_destination(Vecteur2D *c)
 
 
 void limiter_consigne(float* consigne, DigitalOut *direction){
-    if (*consigne > 1) *consigne = 1;
-    else if (*consigne < 0) {
+    if (*consigne < 0) {
+    *direction == 1 ? *direction = 0 : *direction = 1;
     *consigne *= -1;
-    *direction == 1 ? *direction = 0 : *direction = 1; // On inverse le moteur
     }
+    *consigne = min(*consigne, CONSIGNE_MAX);
 }
 
 float min (float a, float b) {
@@ -78,14 +79,13 @@ void Navigateur::update()
       le même sens. On inverse ensuite selon la consigne lors de l'appel
       à `limiter_consigne`.
       */
+
     *d_l = 0;
-    *d_r = 1;
+    *d_r = 0;
 
     limiter_consigne(&cmr, d_r);
     limiter_consigne(&cml, d_l);
 
-    cmr = min(cmr, 0.4);
-    cml = min(cml, 0.4);
 
     // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
     printf("(cmr, cml, cons) = (%.2f, %.2f, %.2f)\n", cmr, cml, angle_cons);
@@ -96,7 +96,38 @@ void Navigateur::update()
 
 }
 
+/*
+ * Tourne le robot de `angle`. Angle représente l'angle relatif,
+ * il peut être positif ou négatif.
+ */
+void Navigateur::rotate_by(float angle) {
+    float theta = position->get_theta();
+    float angle_dest = theta + angle;
+
+    pid_a.setCommande(angle_dest);
+
+    while (1) {
+
+        position->update();
+        float consigne = pid_a.getConsigne();
+        float cmr = -consigne;
+        float cml = consigne;
+
+        *d_l = 1;
+        *d_r = 0;
+
+        limiter_consigne(&cmr, d_r);
+        limiter_consigne(&cml, d_l);
+
+        m_l->write(cml);
+        m_r->write(cmr);
+
+        print_pos();
+        printf(" %f, %f, %d, %d ", cmr, cml, (int)*d_r, (int)*d_l);
+    }
+}
+
 void Navigateur::print_pos()
 {
-    printf("(x, y, theta) = (%.2f, %.2f, %.2f)\n", position->get_x(), position->get_y(), position->get_theta());
+    printf("\r(%.2f, %.2f, %.2f)", position->get_x(), position->get_y(), position->get_theta());
 }
