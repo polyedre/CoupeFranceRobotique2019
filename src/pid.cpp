@@ -26,6 +26,10 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSe
     accumulateurSeuil = _accumulateurSeuil;
     erreurSeuil = _erreurSeuil;
     time.start();
+
+    for (int i = 0; i < 1000; i++) {
+        fifo.push(0);
+    }
 }
 
 float PID::calculerConsigne(){
@@ -34,16 +38,21 @@ float PID::calculerConsigne(){
 }
 
 void PID::AccumulerErreur(float erreur){
-    if (accumulateur < accumulateurSeuil) accumulateur += erreur;
+    accumulateur += erreur;
+    accumulateur -= fifo.back();
+    fifo.push(erreur);
+    fifo.pop();
 }
 
 float PID::getConsigne(){
     erreur = this->calculerErreur();
-    if (erreur < erreurSeuil) {
+    if (abs(erreur) < erreurSeuil) {
         actionFinished = 1;
-        printf("TRIGGER");
-    }
+        reset();
+    } else {
     AccumulerErreur(erreur);
+    actionFinished = 0;
+    }
     return calculerConsigne();
 }
 
@@ -74,8 +83,9 @@ float PIDDistance::calculerErreur(){
    float y = pos->get_y();
 
    float err = sqrt(carre(x - commande_x) + carre(y - commande_y));
-   fifo.push(err);
-   fifo.pop();
+   AccumulerErreur(err);
+   printf("ED:%.2f - ", err);
+
    return err;
 }
 
@@ -95,21 +105,43 @@ PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accu
 
 float PIDAngle::calculerErreur(){
    float theta = pos->get_theta();
-   float err = commande_theta - theta; // TODO vérifier le sens !
-   fifo.push(err);
-   fifo.pop();
-   // printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
+   float err = 0;
+   float err_devant = commande_theta - theta;
+   float err_derriere = commande_theta - (theta + PI);
+   if (abs(err_devant) < abs(err_derriere)) {
+       err = err_devant;
+   } else {
+       err = err_derriere;
+   }
+  
+   AccumulerErreur(err);
+   //  printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
+   printf("EA:%.2f - ", err);
    return err;
 }
 
 void PIDAngle::setCommande(float theta){
    commande_theta = theta;
-   PID::reset();
 }
 
 float calculerAngle(float x1, float y1, float x2, float y2)
 {
-    if ((y2-y1) < 0.001f) return 0;
+    /*
+     * On calcule l'angle entre le vecteur (0, 1) et le vecteur (x2 - x1, y2 - y1)
+     * En calculant le produit scalaire de ces deux vecteur divisé par le produit de
+     * leur normes.
+     * norme_v représente la norme de ce 2ème vecteur.
+     * */
 
-    return asin((x2-x1)/(y2-y1));
+
+    if (abs(x1 - x2) < 0.02) { // Le robot et sa destination sont sur une même ligne
+                               // horizontale
+        if (y1 > y2) return -1.6f; // 90 deg
+        else return 1.6f;
+    }
+
+    float norme_v = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    float rapport = (x2-x1)/norme_v;
+    if (rapport < 0) return acos(rapport);
+    else return -acos(rapport);
 }

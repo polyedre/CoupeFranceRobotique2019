@@ -5,7 +5,7 @@
 
 #define ENCODER_TIM_RIGHT TIM3
 
-#define PI 3.141592653589793
+#define PI 3.141592653589793f
 // Il y a un terme correctif
 #define DIAMETER (0.247f * 0.9190936949450285f) // largeur en mètres entre les deux encodeurs
 // ( ATTENTION : la valeur est arbitraire !)

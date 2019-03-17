@@ -15,10 +15,10 @@ Encoder enc_r(TIM3); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
 PwmOut motor_l(PB_13); // TODO changer les noms des pins
 PwmOut motor_r(PB_15);
 
-DigitalOut direction_l(PG_14);
-DigitalOut direction_r(PF_14);
-DigitalOut beak_l(PG_9);
-DigitalOut breal_r(PE_13);
+DigitalOut direction_r(PF_13);
+DigitalOut breal_r(PE_9);
+DigitalOut direction_l(PE_11);
+DigitalOut beak_l(PF_14);
 
 Position pos(&enc_l, &enc_r);
 Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r);
@@ -38,48 +38,44 @@ int main()
   // motor_r.write(0.0f);
 
   wait(1);
-
-  // for (float i = 0; i < 0.4; i += 0.001) {
-  //   motor_r.write(i);
-  //   printf("\r%f", i);
-  //   wait(0.1);
-  // }
-
-  usb.printf("\r\nDébut rotation directe.\r\n");
-
-  nav.rotate_by(1.57f);
-
-  nav.print_pos();
-
-  usb.printf("\r\nRotation Terminée.\r\n");
-  usb.printf("\r\nDébut rotation indirecte.\r\n");
-
-  motor_l.write(0);
-  motor_r.write(0);
-
+  printf("3...\n");
+  wait(1);
+  printf("2...\n");
+  wait(1);
+  printf("1...\n");
   wait(1);
 
-  nav.rotate_by(-1.57f);
+  // motor_l.write(0.1f);
+  // direction_l = 1;
 
-  nav.print_pos();
+  // wait(3);
 
-  usb.printf("\r\nRotation Terminée.\r\n");
-  usb.printf("\r\nAction Terminée.\r\n");
+  // motor_l.write(0.1f);
+  // direction_l = 0;
 
-  motor_l.write(0);
-  motor_r.write(0);
+  // wait(3);
 
-  // Vecteur2D destination(1,1);
+  // motor_r.write(0.1f);
+  // direction_r = 1;
 
-  // nav.set_destination(&destination);
+  // wait(3);
 
+  // motor_r.write(0.1f);
+  // direction_r = 0;
 
-  // int compteur = 0;
-  // while (1) {
-  //   nav.update();
-  //   // if (compteur % 10000 == 0) nav.print_pos();
-  //   compteur++;
-  // }
+  // wait(3);
+ 
+  // motor_l.write(0);
+  // motor_r.write(0);
+
+  Vecteur2D destination(1,-1);
+
+  nav.set_destination(&destination);
+
+  while (1) {
+    wait(0.1);
+    nav.update();
+  }
 
   return 0;
 }
