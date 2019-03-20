@@ -23,59 +23,72 @@ DigitalOut beak_l(PF_14);
 Position pos(&enc_l, &enc_r);
 Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r);
 
+
+
+int setup() {
+  printf("\r\nInitialisation du programme.\r\n");
+
+  // Communication série
+  // bt.baud(9600);
+  usb.baud(115200);
+
+  wait(1);
+
+  printf("3...\n");
+
+  wait(1);
+
+  printf("2...\n");
+
+  wait(1);
+
+  printf("1...\n");
+
+  wait(1);
+
+  return 1;
+}
+
 int main()
 {
-  // bt.baud(9600); // Bluetooth
-  usb.baud(115200); // USB
+  setup();
 
-  usb.printf("\r\nInitialisation du programme.\r\n");
 
-  // (&motor_l)->write(0.5f);
-  // wait(1);
-  // motor_l.write(0.0f);
-  // motor_r.write(0.5f);
-  // wait(1);
-  // motor_r.write(0.0f);
-
-  wait(1);
-  printf("3...\n");
-  wait(1);
-  printf("2...\n");
-  wait(1);
-  printf("1...\n");
-  wait(1);
-
-  // motor_l.write(0.1f);
-  // direction_l = 1;
-
-  // wait(3);
-
-  // motor_l.write(0.1f);
-  // direction_l = 0;
-
-  // wait(3);
-
-  // motor_r.write(0.1f);
-  // direction_r = 1;
-
-  // wait(3);
-
-  // motor_r.write(0.1f);
-  // direction_r = 0;
-
-  // wait(3);
- 
-  // motor_l.write(0);
-  // motor_r.write(0);
-
-  Vecteur2D destination(1,-1);
+  Vecteur2D destination(0, 0);
 
   nav.set_destination(&destination);
 
+  // Initialisation de l'interruption
+ 
   while (1) {
-    wait(0.1);
     nav.update();
   }
 
   return 0;
+
+}
+void test_motors() {
+
+  motor_l.write(0.1f);
+  direction_l = 1;
+
+  wait(3);
+
+  motor_l.write(0.1f);
+  direction_l = 0;
+
+  wait(3);
+
+  motor_r.write(0.1f);
+  direction_r = 1;
+
+  wait(3);
+
+  motor_r.write(0.1f);
+  direction_r = 0;
+
+  wait(3);
+
+  motor_l.write(0);
+  motor_r.write(0);
 }

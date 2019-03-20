@@ -27,7 +27,6 @@ class PID { // PID asservissement en position
         std::queue<float> fifo;
 
         float derivee_data[3];
-        int derivee_first = 0;
 
         float last_time;
 
@@ -40,6 +39,7 @@ class PID { // PID asservissement en position
         Position* pos;
 
         Timer time;
+
         float accumulateurSeuil;
 };
 

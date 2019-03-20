@@ -42,21 +42,27 @@ float PID::calculerConsigne(){
     return (p * erreur + i * accumulateur + d * getDerivee()) * getRampe();
 }
 
+static void tab_shift(float *tab, int tab_size) {
+    for (int i = tab_size; i > 1; i--) {
+        tab[i] = tab[i-1];
+    }
+}
+
 float PID::getDerivee() {
-    float current_time = time.read();
-    float e1 = derivee_data[derivee_first];
-    float e2 = derivee_data[(derivee_first + 1) % 3];
-    float e3 = derivee_data[(derivee_first + 2) % 3];
-    float dt = current_time - last_time;
-    last_time = current_time;
-    return ((e2 - e1) / dt + (e3 - e2) / dt) / 2;
+    float dt = 1 / FREQUENCE_ECHANTILLONNAGE_PID;
+    return ((derivee_data[1] - derivee_data[0]) / dt
+          + (derivee_data[2] - derivee_data[1]) / dt) / 2;
 }
 
 void PID::AccumulerErreur(float erreur){
     accumulateur += erreur;
     accumulateur -= fifo.back();
+
     fifo.push(erreur);
     fifo.pop();
+
+    tab_shift(derivee_data, 3);
+    derivee_data[0] = erreur;
 }
 
 float PID::getConsigne(){
