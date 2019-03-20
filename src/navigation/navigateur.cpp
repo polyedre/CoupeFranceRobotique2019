@@ -12,7 +12,7 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
 
     // FIXME : Trouver bonnes valeurs de pid.
     PIDDistance _pid_d(0.5, 1, 1, 0.05, 1, position);
-    PIDAngle _pid_a(1, 0.0001, 1, 0.02, 0, position);
+    PIDAngle _pid_a(0.5, 0.0001, 100, 0.02, 0, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;

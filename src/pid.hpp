@@ -15,6 +15,7 @@ class PID { // PID asservissement en position
         float getConsigne();
         virtual float calculerErreur() = 0; // A override dans les classes filles
         void stockerErreur();
+        float getDerivee();
 
         void reset();
         float getRampe();
@@ -24,6 +25,11 @@ class PID { // PID asservissement en position
 
         float accumulateur;
         std::queue<float> fifo;
+
+        float derivee_data[3];
+        int derivee_first = 0;
+
+        float last_time;
 
         float p;
         float i;

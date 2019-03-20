@@ -20,12 +20,17 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSe
 
     accumulateur = 0;
     actionFinished = 0;
+    derivee_data[0] = 0;
+    derivee_data[1] = 0;
+    derivee_data[2] = 0;
 
     pos = position;
 
     accumulateurSeuil = _accumulateurSeuil;
     erreurSeuil = _erreurSeuil;
     time.start();
+
+    last_time = time.read();
 
     for (int i = 0; i < 1000; i++) {
         fifo.push(0);
@@ -34,7 +39,17 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSe
 
 float PID::calculerConsigne(){
     // TODO : Ajouter la dérivée
-    return (p * erreur + i * accumulateur) * getRampe();
+    return (p * erreur + i * accumulateur + d * getDerivee()) * getRampe();
+}
+
+float PID::getDerivee() {
+    float current_time = time.read();
+    float e1 = derivee_data[derivee_first];
+    float e2 = derivee_data[(derivee_first + 1) % 3];
+    float e3 = derivee_data[(derivee_first + 2) % 3];
+    float dt = current_time - last_time;
+    last_time = current_time;
+    return ((e2 - e1) / dt + (e3 - e2) / dt) / 2;
 }
 
 void PID::AccumulerErreur(float erreur){
