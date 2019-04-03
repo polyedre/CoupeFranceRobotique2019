@@ -1,8 +1,9 @@
 #include "mbed.h"
 #include "position.hpp"
 #include "encoder.hpp"
-#include <cmath>
 #include "config.hpp"
+#include "base.hpp"
+#include <cmath>
 
 // const float D = 13900; // 0.2200684f * 367.0f; // mm.tick^-1 * distance entre roues
 
@@ -55,7 +56,7 @@ void Position::update()
 
     x += dx;
     y += dy;
-    theta += dTh;
+    theta = modulo_angle(theta + dTh);
 }
 
 void Position::init(){

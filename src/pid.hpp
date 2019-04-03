@@ -50,7 +50,6 @@ class PIDDistance : public PID {
 
         float calculerErreur();
         void setCommande(float x, float y);
-        void reset();
 
         float commande_x;
         float commande_y;

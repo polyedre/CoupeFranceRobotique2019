@@ -1,9 +1,11 @@
 #include "navigateur.hpp"
 #include <stdio.h>
+#include <math.h>
+#include "../base.hpp"
 #include "../config.hpp"
 
-
-float modulo_angle(float angle);
+extern int debug_monitor;
+extern int move;
 
 Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r)
 {
@@ -11,8 +13,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     cible = NULL;
 
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(0.5, 1, 1, 0.05, 1, position);
-    PIDAngle _pid_a(0.5, 0.0001, 100, 0.02, 0, position);
+    PIDDistance _pid_d(0.5, 20, 1, 0.05, 1, position);
+    PIDAngle _pid_a(0.5, 0.0001, 0.000000001, 0.02, 0, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -27,11 +29,18 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
 
 void Navigateur::set_destination(Vecteur2D *c)
 {
-    // FIXME : supprimer la variable cible ?
     cible = c;
+    // Cible sert de stokage de la consigne
     pid_d.setCommande(cible->x(), cible->y());
 }
 
+void Navigateur::reset() {
+    position->reset();
+    pid_a.reset();
+    pid_d.reset();
+    Vecteur2D destination(0, 0);
+    set_destination(&destination);
+}
 
 void limiter_consigne(float* consigne, int *direction){
     if (*consigne < 0) {
@@ -51,6 +60,7 @@ float min (float a, float b) {
 float max (float a, float b) {
     return (a < b) ? b : a;
 }
+
 void Navigateur::update()
 {
 
@@ -75,8 +85,11 @@ void Navigateur::update()
     // printf("%f, %f, %f\r\n", x, y, theta);
     // printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur, pid_a.accumulateur);
 
-
-    angle_absolu_destination = calculerAngle(x, y, cible->x(), cible->y());
+    if (sqrt(carre(x - cible->x())+ carre(y - cible->y())) > 0.03) {
+        angle_absolu_destination = calculerAngle(x, y, cible->x(), cible->y());
+    } else {
+        angle_absolu_destination = theta;
+    }
 
     angle_relatif = angle_absolu_destination - theta;
 
@@ -91,10 +104,10 @@ void Navigateur::update()
 
     angle_cons = pid_a.getConsigne();
 
-    dist_cons = min(dist_cons, 0.1f);
+    dist_cons = min(dist_cons, 0.2f);
     angle_cons = min(angle_cons, 0.3f);
 
-    dist_cons = max(dist_cons, -0.1f);
+    dist_cons = max(dist_cons, -0.2f);
     angle_cons = max(angle_cons, -0.3f);
 
     /*
@@ -106,31 +119,36 @@ void Navigateur::update()
         dir_r = 1;
         dir_l = 0;
 
-        cmr = (dist_cons + angle_cons) * 2; // Consigne moteur droit
+        cmr = dist_cons + angle_cons; // Consigne moteur droit
         cml = dist_cons - angle_cons; // Consigne moteur gauche
     } else {
         dir_r = 0;
         dir_l = 1;
 
-        cmr = (dist_cons - angle_cons) * 2; // Consigne moteur droit
+        cmr = dist_cons - angle_cons; // Consigne moteur droit
         cml = dist_cons + angle_cons; // Consigne moteur gauche
     }
 
-    printf("cr:%.2f cl:%.2f CA:%.2f CD:%.2f AA:%.2f AR:%.2f AF:%s, INV?:%s\n",
-           cmr, cml,
-           angle_cons, dist_cons,
-           angle_absolu_destination, angle_relatif,
-           pid_d.actionFinished ? "T" : "F",
-           i < 0 ? "Y" : "N");
+    if (debug_monitor) {
+        print_pos();
+        printf("cx:%.2f cy:%.2f ct:%.2f cr:%.2f cl:%.2f CA:%.2f CD:%.2f AR:%.2f AF:%s IN:%s ",
+            cible->x(), cible->y(), angle_absolu_destination,
+            cmr, cml,
+            angle_cons, dist_cons,
+            angle_relatif,
+            pid_d.actionFinished ? "T" : "F",
+            i < 0 ? "Y" : "N");
+    }
 
     limiter_consigne(&cmr, &dir_r);
     limiter_consigne(&cml, &dir_l);
 
     // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
-    print_pos();
 
-    m_l->write(cml);
-    m_r->write(cmr);
+    if (move) {
+        m_l->write(cml);
+        m_r->write(cmr);
+    }
 
     *d_r = dir_r;
     *d_l = dir_l;
@@ -175,18 +193,6 @@ void Navigateur::rotate_by(float angle) {
 
 void Navigateur::print_pos()
 {
-    printf("\r(%.2f, %.2f, %.2f) - ", position->get_x(), position->get_y(), position->get_theta());
+    printf("\rx:%.2f y:%.2f t:%.2f ", position->get_x(), position->get_y(), position->get_theta());
 }
 
-float modulo_angle(float angle) {
-
-    while (angle > PI) {
-        angle -= 2 * PI;
-    }
-
-    while (angle < - PI) {
-        angle += 2 * PI;
-    }
-
-    return angle;
-}

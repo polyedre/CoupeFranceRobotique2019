@@ -4,7 +4,10 @@
 #include "navigation/vecteur2D.hpp"
 #include "position.hpp"
 #include "pid.hpp"
+#include "config.hpp"
 #include <math.h>
+
+/* Class objects */
 
 DigitalOut led(LED3);
 Serial usb(USBTX, USBRX);
@@ -23,72 +26,141 @@ DigitalOut beak_l(PF_14);
 Position pos(&enc_l, &enc_r);
 Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r);
 
+/* Prototypes */
 
+void handleInput();
 
-int setup() {
-  printf("\r\nInitialisation du programme.\r\n");
+/* Global variables */
+
+int debug_monitor = 1;
+int running = 1;
+int move = 1;
+
+void setup() {
 
   // Communication série
   // bt.baud(9600);
   usb.baud(115200);
+  printf("\r\nInitialisation du programme.\r\n");
 
-  wait(1);
+  usb.attach(&handleInput);
 
-  printf("3...\n");
+  for (int i = 0; i < 3; i++) {
+    printf("%d...\n", i);
+    wait(1);
+  }
 
-  wait(1);
+  Vecteur2D destination(0, 0);
+  nav.set_destination(&destination);
 
-  printf("2...\n");
+}
 
-  wait(1);
+void loop() {
 
-  printf("1...\n");
+    while (1) {
+    if (running){
+      nav.update();
+    } else {
+      motor_l = 0;
+      motor_r = 0;
+      wait(0.5);
+    }
+  }
 
-  wait(1);
+}
 
-  return 1;
+void reset() {
+  nav.reset();
 }
 
 int main()
 {
   setup();
-
-
-  Vecteur2D destination(0, 0);
-
-  nav.set_destination(&destination);
-
-  // Initialisation de l'interruption
- 
-  while (1) {
-    nav.update();
-  }
+  loop();
 
   return 0;
 
 }
+
+
+
 void test_motors() {
 
-  motor_l.write(0.1f);
+  motor_l.write(0.2f);
   direction_l = 1;
 
   wait(3);
 
-  motor_l.write(0.1f);
+  motor_l.write(0.2f);
   direction_l = 0;
 
   wait(3);
 
-  motor_r.write(0.1f);
+  motor_l.write(0.0f);
+  motor_r.write(0.2f);
   direction_r = 1;
 
   wait(3);
 
-  motor_r.write(0.1f);
+  motor_r.write(0.2f);
   direction_r = 0;
 
   wait(3);
-
   motor_l.write(0);
   motor_r.write(0);
+}
+
+void handleInput() {
+  char c = usb.getc();
+
+  if (c == 'q') {
+    running = running ? 0 : 1;
+    if (running) printf("\nComputation activé.\n");
+    else printf("\nComputation désactivé.\n");
+  }
+
+  if (c == 'm') {
+    move = move ? 0 : 1;
+    if (move) printf("\nMouvement activé.\n");
+    else printf("\nMouvement désactivé.\n");
+  }
+
+  if (c == 's') { // set destination
+    printf("\nSet mode, chose a destination: \n");
+
+    float x;
+    printf("\nx = ");
+    usb.scanf("%f", &x);
+
+    float y;
+    printf("\ny = ");
+    usb.scanf("%f", &y);
+
+    Vecteur2D destination(x, y);
+    nav.set_destination(&destination);
+
+    printf("\nNew destination set : (%f, %f)\n", x, y);
+
+  }
+
+  if (c == 'd') { // Toggle debug
+    debug_monitor = debug_monitor ? 0 : 1;
+    if (debug_monitor) printf("\nDebug activé.\n");
+    else printf("\nDebug désactivé.\n");
+  }
+
+  if (c == 'r') { // reset
+    printf("\nResetting the program.\n");
+    reset();
+    running = 1;
+    setup();
+  }
+
+  if (c == 'p') {
+    nav.print_pos();
+  }
+
+  if (c == 't') {
+    test_motors();
+  }
 }

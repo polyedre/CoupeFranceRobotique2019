@@ -2,11 +2,14 @@
 #include "position.hpp"
 #include "encoder.hpp"
 #include "config.hpp"
+#include "base.hpp"
 #include <queue>
 #include <math.h>
 
 // Durée de la rampe en seconde
 #define RAMPE_LENGHT 2.0f
+
+extern int debug_monitor;
 
 /* --- PID général --- */
 
@@ -39,19 +42,19 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSe
 
 float PID::calculerConsigne(){
     // TODO : Ajouter la dérivée
-    return (p * erreur + i * accumulateur + d * getDerivee()) * getRampe();
+    return (p * erreur + i * accumulateur + 0 * getDerivee());// * getRampe();
 }
 
 static void tab_shift(float *tab, int tab_size) {
-    for (int i = tab_size; i > 1; i--) {
+    for (int i = tab_size; i > 0; i--) {
         tab[i] = tab[i-1];
     }
 }
 
 float PID::getDerivee() {
-    float dt = 1 / FREQUENCE_ECHANTILLONNAGE_PID;
-    return ((derivee_data[1] - derivee_data[0]) / dt
-          + (derivee_data[2] - derivee_data[1]) / dt) / 2;
+    float dt = 1 / 1000.0f;
+    // printf("%f, %f, %f, %f\n", derivee_data[0], derivee_data[1], derivee_data[2], dt);
+    return (((derivee_data[0] - derivee_data[1]) / dt) +   ((derivee_data[1] - derivee_data[2]) / dt)) / 2;
 }
 
 void PID::AccumulerErreur(float erreur){
@@ -94,18 +97,13 @@ PIDDistance::PIDDistance(){}
 PIDDistance::PIDDistance(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil, Position* position) :
     PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, position) {}
 
-// FIXME : Fonction mal placée
-float carre(float a){
-    return a * a;
-}
-
 float PIDDistance::calculerErreur(){
    float x = pos->get_x();
    float y = pos->get_y();
 
    float err = sqrt(carre(x - commande_x) + carre(y - commande_y));
-   AccumulerErreur(err);
-   printf("ED:%.2f - ", err);
+
+   if (debug_monitor) printf("ED:%.2f ", err);
 
    return err;
 }
@@ -127,17 +125,16 @@ PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accu
 float PIDAngle::calculerErreur(){
    float theta = pos->get_theta();
    float err = 0;
-   float err_devant = commande_theta - theta;
-   float err_derriere = commande_theta - (theta + PI);
+   float err_devant = modulo_angle(commande_theta - theta);
+   float err_derriere = modulo_angle(commande_theta - (theta + PI));
    if (abs(err_devant) < abs(err_derriere)) {
        err = err_devant;
    } else {
        err = err_derriere;
    }
   
-   AccumulerErreur(err);
    //  printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
-   printf("EA:%.2f - ", err);
+   if (debug_monitor) printf("EA:%.2f \n", err);
    return err;
 }
 
