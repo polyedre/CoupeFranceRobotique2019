@@ -154,30 +154,5 @@ float calculerAngle(float x1, float y1, float x2, float y2)
     float dx = x2 - x1;
     float dy = y2 - y1;
 
-    if (abs(dx) < 0.02) { // Le robot et sa destination sont sur une même ligne
-                               // horizontale
-        if (dy > 0) return - PI_OVER_TWO; // 90 deg
-        else return PI_OVER_TWO;
-    }
-
-    float norme_v = sqrt(dx * dx + dy * dy);
-    float rapport = dx / norme_v;
-
-    if (dy < 0) {
-        if (dx > 0) {
-            printf("j");
-            return acos(rapport);
-        } else {
-            printf("k");
-           return acos(rapport) + PI_OVER_TWO;
-        }
-    } else {
-        if (dx > 0) {
-            printf("l");
-            return - acos(rapport);
-        } else {
-            printf("m");
-           return - acos(rapport) - PI_OVER_TWO;
-        }
-    }
+    return atan2(dy, dx);
 }
