@@ -34,6 +34,8 @@ class PID { // PID asservissement en position
         float i;
         float d;
 
+        int compteur_acc;
+
         short actionFinished;
 
         Position* pos;

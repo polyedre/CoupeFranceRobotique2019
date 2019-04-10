@@ -35,14 +35,12 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSe
 
     last_time = time.read();
 
-    for (int i = 0; i < 1000; i++) {
-        fifo.push(0);
-    }
 }
 
 float PID::calculerConsigne(){
     // TODO : Ajouter la dérivée
-    return (p * erreur + i * accumulateur + 0 * getDerivee());// * getRampe();
+    printf("ACC:%f", accumulateur);
+    return (p * erreur + i * accumulateur + d * getDerivee()) * getRampe();
 }
 
 static void tab_shift(float *tab, int tab_size) {
@@ -58,11 +56,8 @@ float PID::getDerivee() {
 }
 
 void PID::AccumulerErreur(float erreur){
-    accumulateur += erreur;
-    accumulateur -= fifo.back();
 
-    fifo.push(erreur);
-    fifo.pop();
+    accumulateur += erreur;
 
     tab_shift(derivee_data, 3);
     derivee_data[0] = erreur;
@@ -71,8 +66,8 @@ void PID::AccumulerErreur(float erreur){
 float PID::getConsigne(){
     erreur = this->calculerErreur();
     if (abs(erreur) < erreurSeuil) {
+        if (!actionFinished) reset();
         actionFinished = 1;
-        reset();
     } else {
     AccumulerErreur(erreur);
     actionFinished = 0;
@@ -87,11 +82,15 @@ float PID::getRampe(){
 
 void PID::reset(){
     accumulateur = 0;
+    compteur_acc = 0;
+    for (int i = 0; i < 1000; i++) {
+        fifo.push(0);
+        fifo.pop();
+    }
     time.reset();
 }
 
 /* --- PID en DISTANCE --- */
-
 PIDDistance::PIDDistance(){}
 
 PIDDistance::PIDDistance(float _p, float _i, float _d, float _erreurSeuil, float _accumulateurSeuil, Position* position) :
@@ -125,13 +124,14 @@ PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accu
 float PIDAngle::calculerErreur(){
    float theta = pos->get_theta();
    float err = 0;
-   float err_devant = modulo_angle(commande_theta - theta);
-   float err_derriere = modulo_angle(commande_theta - (theta + PI));
-   if (abs(err_devant) < abs(err_derriere)) {
-       err = err_devant;
-   } else {
-       err = err_derriere;
-   }
+   float err_devant = commande_theta - theta;
+   printf("EAA:%.2f ", err_devant);
+//    float err_derriere = modulo_angle_relatif(commande_theta - (theta + PI));
+//    if (abs(err_devant) < abs(err_derriere)) {
+       err = modulo_angle_relatif(err_devant);
+//    } else {
+//        err = err_derriere;
+//    }
   
    //  printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
    if (debug_monitor) printf("EA:%.2f \n", err);
@@ -151,15 +151,33 @@ float calculerAngle(float x1, float y1, float x2, float y2)
      * norme_v représente la norme de ce 2ème vecteur.
      * */
 
+    float dx = x2 - x1;
+    float dy = y2 - y1;
 
-    if (abs(x1 - x2) < 0.02) { // Le robot et sa destination sont sur une même ligne
+    if (abs(dx) < 0.02) { // Le robot et sa destination sont sur une même ligne
                                // horizontale
-        if (y1 > y2) return -1.6f; // 90 deg
-        else return 1.6f;
+        if (dy > 0) return - PI_OVER_TWO; // 90 deg
+        else return PI_OVER_TWO;
     }
 
-    float norme_v = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-    float rapport = (x2-x1)/norme_v;
-    if (rapport < 0) return acos(rapport);
-    else return -acos(rapport);
+    float norme_v = sqrt(dx * dx + dy * dy);
+    float rapport = dx / norme_v;
+
+    if (dy < 0) {
+        if (dx > 0) {
+            printf("j");
+            return acos(rapport);
+        } else {
+            printf("k");
+           return acos(rapport) + PI_OVER_TWO;
+        }
+    } else {
+        if (dx > 0) {
+            printf("l");
+            return - acos(rapport);
+        } else {
+            printf("m");
+           return - acos(rapport) - PI_OVER_TWO;
+        }
+    }
 }

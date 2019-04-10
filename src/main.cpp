@@ -6,6 +6,7 @@
 #include "pid.hpp"
 #include "config.hpp"
 #include <math.h>
+#include "base.hpp"
 
 /* Class objects */
 
@@ -50,6 +51,8 @@ void setup() {
     wait(1);
   }
 
+  printf("%f", convert_degree(3.14));
+
   Vecteur2D destination(0, 0);
   nav.set_destination(&destination);
 
@@ -69,9 +72,9 @@ void loop() {
 
 }
 
-void reset() {
-  nav.reset();
-}
+// void reset() {
+//   nav.reset();
+// }
 
 int main()
 {
@@ -86,28 +89,44 @@ int main()
 
 void test_motors() {
 
+  // Avancer tout droit
+  motor_l.write(0.2f);
+  direction_l = 0;
+  motor_r.write(0.2f);
+  direction_r = 1;
+  
+  wait(1);
+
+  motor_l.write(0.0f);
+  motor_r.write(0.0f);
+
+  // wait(2);
+
+  // Reculer tout droit
   motor_l.write(0.2f);
   direction_l = 1;
+  motor_r.write(0.2f);
+  direction_r = 0;
 
-  wait(3);
+  wait(1);
+
+  motor_l.write(0.0f);
+  motor_r.write(0.0f);
+
+  wait(1);
 
   motor_l.write(0.2f);
   direction_l = 0;
 
-  wait(3);
+  wait(1);
 
   motor_l.write(0.0f);
   motor_r.write(0.2f);
   direction_r = 1;
 
-  wait(3);
-
-  motor_r.write(0.2f);
-  direction_r = 0;
-
-  wait(3);
-  motor_l.write(0);
-  motor_r.write(0);
+  wait(1);
+  motor_l.write(0.0f);
+  motor_r.write(0.0f);
 }
 
 void handleInput() {
@@ -151,7 +170,8 @@ void handleInput() {
 
   if (c == 'r') { // reset
     printf("\nResetting the program.\n");
-    reset();
+    SCB->AIRCR = 0x05fa0004;
+    // reset();
     running = 1;
     setup();
   }

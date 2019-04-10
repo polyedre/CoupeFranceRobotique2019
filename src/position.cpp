@@ -47,7 +47,7 @@ void Position::update()
     float der = encod_r->diff() / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
 
     float dx = (del + der) / 2 * cos(theta);
-    float dy = (del + der) / 2 * sin(theta);
+    float dy = - (del + der) / 2 * sin(theta);
     float dTh =(der - del) / DIAMETER;
 
     // printf("(dx, del, der) = (%f, %f, %f)\n", dx, del, der);
@@ -56,7 +56,8 @@ void Position::update()
 
     x += dx;
     y += dy;
-    theta = modulo_angle(theta + dTh);
+    theta = theta + dTh;
+    theta = modulo_angle_absolu(theta);
 }
 
 void Position::init(){
