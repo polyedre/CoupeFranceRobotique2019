@@ -13,8 +13,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     cible = NULL;
 
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(0.002, 0.03, 0.1, 0.05, 1, position);
-    PIDAngle _pid_a(0.001, 0.001, 0.1, 0.02, 0, position);
+    PIDDistance _pid_d(0.001, 0.01, 0.1, 0.01, 1, position);
+    PIDAngle _pid_a(0.03, 0.02, 0.1, 0.02, 0, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -90,17 +90,15 @@ void Navigateur::update()
 
     float distance_cible = sqrt(carre(x - cible->x())+ carre(y - cible->y()));
 
-    if (distance_cible > 0.03) {
+    if (distance_cible > 0.1) {
         angle_absolu_destination = modulo_angle_absolu(calculerAngle(x, y, cible->x(), cible->y()));
     } else {
         angle_absolu_destination = theta;
     }
 
-    angle_relatif = angle_absolu_destination - theta;
+    angle_relatif = modulo_angle_relatif(angle_absolu_destination - theta);
 
-    angle_relatif = modulo_angle_relatif(angle_relatif);
-
-    if ((abs(angle_relatif) < 0.1) || (abs(abs(angle_relatif) - PI) < 0.1)) {//|| (abs(modulo_angle_relatif(angle_relatif - PI)) < 0.5)) {
+    if ((abs(angle_relatif) < 0.1) || (abs(abs(angle_relatif) - PI) < 0.1)) {
         triggered = 1;
         dist_cons = pid_d.getConsigne();
     }
