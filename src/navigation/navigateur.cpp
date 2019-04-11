@@ -13,8 +13,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     cible = NULL;
 
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(0.05, 0.03, 0.1, 0.05, 1, position);
-    PIDAngle _pid_a(0.1, 0.01, 0.1, 0.02, 0, position);
+    PIDDistance _pid_d(0.002, 0.03, 0.1, 0.05, 1, position);
+    PIDAngle _pid_a(0.001, 0.001, 0.1, 0.02, 0, position);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -100,16 +100,19 @@ void Navigateur::update()
 
     angle_relatif = modulo_angle_relatif(angle_relatif);
 
-    if ((abs(angle_relatif) < 0.1) ) {//|| (abs(modulo_angle_relatif(angle_relatif - PI)) < 0.5)) {
+    if ((abs(angle_relatif) < 0.1) || (abs(abs(angle_relatif) - PI) < 0.1)) {//|| (abs(modulo_angle_relatif(angle_relatif - PI)) < 0.5)) {
         triggered = 1;
         dist_cons = pid_d.getConsigne();
     }
 
-    if (abs(angle_relatif) > PI_OVER_TWO) i = -1;
+    if ((angle_relatif < PI + 0.3) && (angle_relatif > PI - 0.3)) i = -1;
 
     //  Calcul Consigne pour angle avec angle cible rafraichie
-    pid_a.setCommande(angle_absolu_destination);
-
+    if (i > 0) {
+        pid_a.setCommande(angle_absolu_destination);
+    } else {
+        pid_a.setCommande(modulo_angle_absolu(angle_absolu_destination + PI));
+    }
     angle_cons = pid_a.getConsigne();
 
     dist_cons = min(dist_cons, 0.4f);
@@ -133,8 +136,8 @@ void Navigateur::update()
         dir_r = 0;
         dir_l = 1;
 
-        cmr = dist_cons + angle_cons; // Consigne moteur droit
-        cml = dist_cons - angle_cons; // Consigne moteur gauche
+        cmr = dist_cons - angle_cons; // Consigne moteur droit
+        cml = dist_cons + angle_cons; // Consigne moteur gauche
     }
 
     if (debug_monitor) {

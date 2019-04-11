@@ -122,20 +122,11 @@ PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil, float _accu
     PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, position) {}
 
 float PIDAngle::calculerErreur(){
-   float theta = pos->get_theta();
-   float err = 0;
-   float err_devant = commande_theta - theta;
-   printf("EAA:%.2f ", err_devant);
-//    float err_derriere = modulo_angle_relatif(commande_theta - (theta + PI));
-//    if (abs(err_devant) < abs(err_derriere)) {
-       err = modulo_angle_relatif(err_devant);
-//    } else {
-//        err = err_derriere;
-//    }
-  
-   //  printf("Erreur Angle : %f, comm = %f, theta = %f\r\n", err, commande_theta, theta);
-   if (debug_monitor) printf("EA:%.2f \n", err);
-   return err;
+    float theta = pos->get_theta();
+    float err = modulo_angle_relatif(commande_theta - theta);
+
+    if (debug_monitor) printf("EA:%.2f \n", err);
+    return err;
 }
 
 void PIDAngle::setCommande(float theta){

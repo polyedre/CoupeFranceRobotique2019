@@ -115,16 +115,20 @@ void test_motors() {
 
   wait(1);
 
+  // Tourner
   motor_l.write(0.2f);
-  direction_l = 0;
-
-  wait(1);
-
-  motor_l.write(0.0f);
+  direction_l = 1;
   motor_r.write(0.2f);
   direction_r = 1;
 
   wait(1);
+
+  // Tourner
+  direction_l = 0;
+  direction_r = 0;
+
+  wait(1);
+
   motor_l.write(0.0f);
   motor_r.write(0.0f);
 }
