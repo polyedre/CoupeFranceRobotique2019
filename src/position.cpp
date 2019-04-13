@@ -48,11 +48,11 @@ void Position::update()
 
     float dx = (del + der) / 2 * cos(theta);
     float dy = - (del + der) / 2 * sin(theta);
-    float dTh =(der - del) / DIAMETER;
+    float dTh = (der - del) / DIAMETER;
 
     // printf("(dx, del, der) = (%f, %f, %f)\n", dx, del, der);
 
-    // TODO : mettre un modulo
+    // TODO : check la position du calcul de theta
 
     x += dx;
     y += dy;
