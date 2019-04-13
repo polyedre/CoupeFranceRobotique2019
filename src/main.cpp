@@ -24,12 +24,15 @@ DigitalOut breal_r(PE_9);
 DigitalOut direction_l(PE_11);
 DigitalOut beak_l(PF_14);
 
+Ticker updatePos_t;
+
 Position pos(&enc_l, &enc_r);
-Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r);
+Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l, &enc_r);
 
 /* Prototypes */
 
 void handleInput();
+void updatePos();
 
 /* Global variables */
 
@@ -45,13 +48,12 @@ void setup() {
   printf("\r\nInitialisation du programme.\r\n");
 
   usb.attach(&handleInput);
+  updatePos_t.attach(&updatePos, 0.1f);
 
   for (int i = 0; i < 3; i++) {
     printf("%d...\n", i);
     wait(1);
   }
-
-  printf("%f", convert_degree(3.14));
 
   Vecteur2D destination(0, 0);
   nav.set_destination(&destination);
@@ -62,7 +64,7 @@ void loop() {
 
     while (1) {
     if (running){
-      nav.update();
+      // nav.update();
     } else {
       motor_l = 0;
       motor_r = 0;
@@ -187,4 +189,8 @@ void handleInput() {
   if (c == 't') {
     test_motors();
   }
+}
+
+void updatePos() {
+ nav.updatePos();
 }

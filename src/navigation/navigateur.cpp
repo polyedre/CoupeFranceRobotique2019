@@ -7,7 +7,7 @@
 extern int debug_monitor;
 extern int move;
 
-Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r)
+Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r, Encoder * encod_l, Encoder * encod_r)
 {
     position = _position;
     cible = NULL;
@@ -15,9 +15,13 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     // FIXME : Trouver bonnes valeurs de pid.
     PIDDistance _pid_d(0.001, 0.01, 0.1, 0.01, 1, position);
     PIDAngle _pid_a(0.03, 0.02, 0.1, 0.02, 0, position);
+    PIDVitesse _pid_v_l(0.03, 0.02, 0.1, 0.02, 0, encod_l, 1);
+    PIDVitesse _pid_v_r(0.03, 0.02, 0.1, 0.02, 0, encod_r, 1);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
+    pid_v_l = _pid_v_l;
+    pid_v_r = _pid_v_r;
 
     m_l = _m_l;
     m_r = _m_r;
@@ -42,7 +46,8 @@ void Navigateur::reset() {
     set_destination(&destination);
 }
 
-void limiter_consigne(float* consigne, int *direction){
+void limiter_consigne(float* consigne, int *direction)
+{
     if (*consigne < 0) {
         *direction == 1 ? *direction = 0 : *direction = 1;
         *consigne = abs(*consigne);
@@ -53,18 +58,18 @@ void limiter_consigne(float* consigne, int *direction){
     *consigne = max(*consigne, -0.4f);
 }
 
-float min (float a, float b) {
+float min (float a, float b)
+{
     return (a > b) ? b : a;
 }
 
-float max (float a, float b) {
+float max (float a, float b)
+{
     return (a < b) ? b : a;
 }
 
 void Navigateur::update()
 {
-
-    position->update();
 
     float x = position->get_x();
     float y = position->get_y();
@@ -138,15 +143,22 @@ void Navigateur::update()
         cml = dist_cons + angle_cons; // Consigne moteur gauche
     }
 
+
+    pid_v_r.setCommande(cmr);
+    cmr = pid_v_r.getConsigne();
+
+    pid_v_l.setCommande(cml);
+    cml = pid_v_l.getConsigne();
+
     if (debug_monitor) {
         print_pos();
-        printf("cx:%.2f cy:%.2f ct:%.2f cr:%.2f cl:%.2f CA:%.2f CD:%.2f AR:%.2f AF:%s IN:%s T:%s ",
+        printf("x:%.2f y:%.2f t:%.2f r:%.2f l:%.2f A:%.2f D:%.2f R:%.2f F:%s I:%s ",
             cible->x(), cible->y(), convert_degree(angle_absolu_destination),
             cmr, cml,
             angle_cons, dist_cons,
             convert_degree(angle_relatif),
             pid_d.actionFinished ? "T" : "F",
-            i < 0 ? "Y" : "N",
+            // i < 0 ? "Y" : "N",
             triggered == 1 ? "Y" : "N");
     }
 
@@ -154,6 +166,8 @@ void Navigateur::update()
     limiter_consigne(&cml, &dir_l);
 
     // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
+
+
 
     if (move) {
         m_l->write(cml);
@@ -169,7 +183,8 @@ void Navigateur::update()
  * Tourne le robot de `angle`. Angle représente l'angle relatif,
  * il peut être positif ou négatif.
  */
-void Navigateur::rotate_by(float angle) {
+void Navigateur::rotate_by(float angle)
+{
     float theta = position->get_theta();
     float angle_dest = theta + angle;
 
@@ -177,7 +192,6 @@ void Navigateur::rotate_by(float angle) {
 
     while (1) {
 
-        position->update();
         float consigne = pid_a.getConsigne();
 
         consigne = min(consigne, 0.4f);
@@ -203,6 +217,13 @@ void Navigateur::rotate_by(float angle) {
 
 void Navigateur::print_pos()
 {
-    printf("\rx:%.2f y:%.2f t:%.2f ", position->get_x(), position->get_y(), convert_degree(position->get_theta()));
+    printf("\n\rx:%.2f y:%.2f t:%.2f ", position->get_x(), position->get_y(), convert_degree(position->get_theta()));
 }
 
+void Navigateur::updatePos()
+{
+    short vitesses[2];
+    position->update(vitesses);
+    pid_v_r.updateVitesse(vitesses[0]);
+    pid_v_l.updateVitesse(vitesses[1]);
+}

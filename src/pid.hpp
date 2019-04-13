@@ -9,7 +9,7 @@ float calculerAngle(float x1, float y1, float x2, float y2);
 class PID { // PID asservissement en position
     public:
         PID();
-        PID(float p, float i, float d, float erreurSeuil, float accumulateurSeuil, Position* position);
+        PID(float p, float i, float d, float erreurSeuil, float accumulateurSeuil);
         void AccumulerErreur(float erreur);
         float calculerConsigne();
         float getConsigne();
@@ -38,8 +38,6 @@ class PID { // PID asservissement en position
 
         short actionFinished;
 
-        Position* pos;
-
         Timer time;
 
         float accumulateurSeuil;
@@ -55,6 +53,7 @@ class PIDDistance : public PID {
 
         float commande_x;
         float commande_y;
+        Position* pos;
 };
 
 class PIDAngle : public PID {
@@ -66,6 +65,21 @@ class PIDAngle : public PID {
         void setCommande(float theta);
 
         float commande_theta;
+        Position* pos;
 };
 
+class PIDVitesse : public PID {
+    public:
+        PIDVitesse();
+        PIDVitesse(float p, float i, float d, float erreurSeuil, float accumulateurSeuil, Encoder* encoder, float coef);
+
+        float calculerErreur();
+        void updateVitesse(short v);
+        void setCommande(float theta);
+
+        float commande_vitesse = 0;
+        short vitesse = 0;
+        float coef; // Coef to pass from command to vitesse
+        Encoder * encod;
+};
 #endif // __PID_H_

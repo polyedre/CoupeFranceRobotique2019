@@ -41,10 +41,16 @@ float Position::get_theta()
 /**
  * Nouveau modèle de déplacement élémentaire centré autour du milieu des deux encodeurs.
  * */
-void Position::update()
+void Position::update(short vitesses[])
 {
-    float del = encod_l->diff() / ENCODEUR_ECHELLE;     // mouvement de l'encodeur gauche en mètres
-    float der = encod_r->diff() / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
+    short dl = encod_l->diff();
+    short dr = encod_r->diff();
+
+    vitesses[0] = dl;
+    vitesses[0] = dr;
+
+    float del = dl / ENCODEUR_ECHELLE;     // mouvement de l'encodeur gauche en mètres
+    float der = dr / ENCODEUR_ECHELLE;    // mouvement de l'encodeur droit en mètres
 
     float dx = (del + der) / 2 * cos(theta);
     float dy = (del + der) / 2 * sin(theta);
@@ -52,12 +58,11 @@ void Position::update()
 
     // printf("(dx, del, der) = (%f, %f, %f)\n", dx, del, der);
 
-    // TODO : mettre un modulo
-
     x += dx;
     y += dy;
     theta = theta + dTh;
     theta = modulo_angle_absolu(theta);
+
 }
 
 void Position::init(){

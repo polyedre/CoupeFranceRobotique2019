@@ -13,7 +13,7 @@ class Position
         float get_x();
         float get_y();
         float get_theta();
-        void update();
+        void update(short vitesses[]); // return value
         void reset();
         void init();
     // private:
