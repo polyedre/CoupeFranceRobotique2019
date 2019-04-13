@@ -33,6 +33,7 @@ Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l, &en
 
 void handleInput();
 void updatePos();
+void test_motors();
 
 /* Global variables */
 
@@ -48,15 +49,14 @@ void setup() {
   printf("\r\nInitialisation du programme.\r\n");
 
   usb.attach(&handleInput);
-  updatePos_t.attach(&updatePos, 0.1f);
+  updatePos_t.attach(&updatePos, 0.001f);
 
   for (int i = 0; i < 3; i++) {
     printf("%d...\n", i);
     wait(1);
   }
 
-  Vecteur2D destination(0, 0);
-  nav.set_destination(&destination);
+  nav.set_destination(0, 0);
 
 }
 
@@ -64,7 +64,7 @@ void loop() {
 
     while (1) {
     if (running){
-      // nav.update();
+      nav.update();
     } else {
       motor_l = 0;
       motor_r = 0;
@@ -74,14 +74,11 @@ void loop() {
 
 }
 
-// void reset() {
-//   nav.reset();
-// }
-
 int main()
 {
   setup();
   loop();
+  // test_motors();
 
   return 0;
 
@@ -91,45 +88,77 @@ int main()
 
 void test_motors() {
 
-  // Avancer tout droit
-  motor_l.write(0.2f);
-  direction_l = 0;
-  motor_r.write(0.2f);
-  direction_r = 1;
+  // // Avancer tout droit
+  // motor_l.write(0.2f);
+  // direction_l = 0;
+  // motor_r.write(0.2f);
+  // direction_r = 1;
   
-  wait(1);
+  // wait(1);
+
+  // motor_l.write(0.0f);
+  // motor_r.write(0.0f);
+
+  // // wait(2);
+
+  // // Reculer tout droit
+  // motor_l.write(0.2f);
+  // direction_l = 1;
+  // motor_r.write(0.2f);
+  // direction_r = 0;
+
+  // wait(1);
+
+  // motor_l.write(0.0f);
+  // motor_r.write(0.0f);
+
+  // wait(1);
+
+  // // Tourner
+  // motor_l.write(0.2f);
+  // direction_l = 1;
+  // motor_r.write(0.2f);
+  // direction_r = 1;
+
+  // wait(1);
+
+  // // Tourner
+  // direction_l = 0;
+  // direction_r = 0;
+
+  // wait(1);
 
   motor_l.write(0.0f);
   motor_r.write(0.0f);
 
-  // wait(2);
-
-  // Reculer tout droit
-  motor_l.write(0.2f);
-  direction_l = 1;
-  motor_r.write(0.2f);
-  direction_r = 0;
-
-  wait(1);
-
-  motor_l.write(0.0f);
-  motor_r.write(0.0f);
-
-  wait(1);
-
-  // Tourner
-  motor_l.write(0.2f);
-  direction_l = 1;
-  motor_r.write(0.2f);
+  // tourner
+  direction_l = 0;
   direction_r = 1;
 
-  wait(1);
+  nav.pid_v_l.reset();
+  nav.pid_v_r.reset();
+  nav.pid_v_l.setCommande(0.1f);
+  nav.pid_v_r.setCommande(0.1f);
 
-  // Tourner
-  direction_l = 0;
-  direction_r = 0;
+  printf("DEBUT\n");
 
-  wait(1);
+  int i = 0;
+  while (running) {
+    short * useless;
+    wait(0.1);
+
+    float cml = nav.pid_v_l.getConsigne();
+    float cmr = nav.pid_v_r.getConsigne();
+
+    printf("%f %f\n", cmr, cml);
+    cmr = max(cmr, 0.2f);
+    cml = max(cml, 0.2f);
+    motor_l.write(cml);
+    motor_r.write(cmr);
+    i++;
+  }
+
+  printf("FIN_TEST\n");
 
   motor_l.write(0.0f);
   motor_r.write(0.0f);
@@ -162,7 +191,7 @@ void handleInput() {
     usb.scanf("%f", &y);
 
     Vecteur2D destination(x, y);
-    nav.set_destination(&destination);
+    nav.set_destination(x, y);
 
     printf("\nNew destination set : (%f, %f)\n", x, y);
 

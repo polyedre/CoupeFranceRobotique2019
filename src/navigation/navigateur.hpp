@@ -17,21 +17,22 @@ class Navigateur
         /**
          * Définit "cible" comme nouveau point à atteindre par le navigateur.
          */
-        void set_destination(Vecteur2D* cible);
+        void set_destination(float x, float y);
         void update();
         void print_pos();
         Position* position;
         void rotate_by(float angle);
         void reset();
         void updatePos();
+        PIDVitesse pid_v_l;
+        PIDVitesse pid_v_r;
 
     private:
-        Vecteur2D* cible;
+        float cible_x = 0;
+        float cible_y = 0;
         float angle_reel;
         PIDDistance pid_d;
         PIDAngle pid_a;
-        PIDVitesse pid_v_l;
-        PIDVitesse pid_v_r;
         PwmOut* m_l;
         PwmOut* m_r;
         DigitalOut* d_l;

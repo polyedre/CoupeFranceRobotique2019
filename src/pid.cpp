@@ -157,11 +157,12 @@ PIDVitesse::PIDVitesse(float _p, float _i, float _d, float _erreurSeuil, float _
     PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil) {
     encod = encoder;
     coef = _coef;
+    vitesse = 0;
 }
 
 void PIDVitesse::updateVitesse(short v) {
-    vitesse = coef * v;
-    printf("EV:,%.2f)\n", v);
+    vitesse = coef * (float)v;
+    // printf("%d, %f\n", v, vitesse);
 }
 
 float PIDVitesse::calculerErreur(){

@@ -78,7 +78,7 @@ class PIDVitesse : public PID {
         void setCommande(float theta);
 
         float commande_vitesse = 0;
-        short vitesse = 0;
+        float vitesse;
         float coef; // Coef to pass from command to vitesse
         Encoder * encod;
 };

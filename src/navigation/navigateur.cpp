@@ -10,13 +10,12 @@ extern int move;
 Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r, Encoder * encod_l, Encoder * encod_r)
 {
     position = _position;
-    cible = NULL;
 
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(0.001, 0.01, 0.1, 0.01, 1, position);
-    PIDAngle _pid_a(0.03, 0.02, 0.1, 0.02, 0, position);
-    PIDVitesse _pid_v_l(0.03, 0.02, 0.1, 0.02, 0, encod_l, 1);
-    PIDVitesse _pid_v_r(0.03, 0.02, 0.1, 0.02, 0, encod_r, 1);
+    PIDDistance _pid_d(0.08, 0.001, 0, 0.03, 1, position);
+    PIDAngle _pid_a(0.02, 0.01, 0.1, 0.02, 0, position);
+    PIDVitesse _pid_v_l(1, 0, 0, 0.02, 0, encod_l, 0.003);
+    PIDVitesse _pid_v_r(1, 0, 0, 0.02, 0, encod_r, 0.003);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -31,19 +30,19 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     d_r = _d_r;
 }
 
-void Navigateur::set_destination(Vecteur2D *c)
+void Navigateur::set_destination(float x, float y)
 {
-    cible = c;
+    cible_x = x;
+    cible_y = y;
     // Cible sert de stokage de la consigne
-    pid_d.setCommande(cible->x(), cible->y());
+    pid_d.setCommande(cible_x, cible_y);
 }
 
 void Navigateur::reset() {
     position->reset();
     pid_a.reset();
     pid_d.reset();
-    Vecteur2D destination(0, 0);
-    set_destination(&destination);
+    set_destination(0, 0);
 }
 
 void limiter_consigne(float* consigne, int *direction)
@@ -54,8 +53,8 @@ void limiter_consigne(float* consigne, int *direction)
     }
     // Commenté car géré directement dans la fonction update
     // consigne = min(*consigne, CONSIGNE_MAX);
-    *consigne = min(*consigne, 0.4f);
-    *consigne = max(*consigne, -0.4f);
+    *consigne = min(*consigne, 0.3f);
+    *consigne = max(*consigne, -0.3f);
 }
 
 float min (float a, float b)
@@ -93,22 +92,22 @@ void Navigateur::update()
     // printf("%f, %f, %f\r\n", x, y, theta);
     // printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur, pid_a.accumulateur);
 
-    float distance_cible = sqrt(carre(x - cible->x())+ carre(y - cible->y()));
+    float distance_cible = sqrt(carre(x - cible_x)+ carre(y - cible_y));
 
     if (distance_cible > 0.1) {
-        angle_absolu_destination = modulo_angle_absolu(calculerAngle(x, y, cible->x(), cible->y()));
+        angle_absolu_destination = modulo_angle_absolu(calculerAngle(x, y, cible_x, cible_y));
     } else {
         angle_absolu_destination = theta;
     }
 
     angle_relatif = modulo_angle_relatif(angle_absolu_destination - theta);
 
-    if ((abs(angle_relatif) < 0.1) || (abs(abs(angle_relatif) - PI) < 0.1)) {
+    if ((abs(angle_relatif) < 0.3) || (abs(abs(angle_relatif) - PI) < 0.3)) {
         triggered = 1;
         dist_cons = pid_d.getConsigne();
     }
 
-    if ((angle_relatif < PI + 0.3) && (angle_relatif > PI - 0.3)) i = -1;
+    // if ((angle_relatif < PI + 0.3) && (angle_relatif > PI - 0.3)) i = -1;
 
     //  Calcul Consigne pour angle avec angle cible rafraichie
     if (i > 0) {
@@ -145,15 +144,15 @@ void Navigateur::update()
 
 
     pid_v_r.setCommande(cmr);
-    cmr = pid_v_r.getConsigne();
+    float cmr_v = pid_v_r.getConsigne();
 
     pid_v_l.setCommande(cml);
-    cml = pid_v_l.getConsigne();
+    float cml_v = pid_v_l.getConsigne();
 
     if (debug_monitor) {
         print_pos();
-        printf("x:%.2f y:%.2f t:%.2f r:%.2f l:%.2f A:%.2f D:%.2f R:%.2f F:%s I:%s ",
-            cible->x(), cible->y(), convert_degree(angle_absolu_destination),
+        printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f A:%.2f D:%.2f R:%.2f F:%s T:%s ",
+            cible_x, cible_y, convert_degree(angle_absolu_destination),
             cmr, cml,
             angle_cons, dist_cons,
             convert_degree(angle_relatif),
@@ -162,16 +161,16 @@ void Navigateur::update()
             triggered == 1 ? "Y" : "N");
     }
 
-    limiter_consigne(&cmr, &dir_r);
-    limiter_consigne(&cml, &dir_l);
+    limiter_consigne(&cmr_v, &dir_r);
+    limiter_consigne(&cml_v, &dir_l);
 
     // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
 
 
     if (move) {
-        m_l->write(cml);
-        m_r->write(cmr);
+        m_l->write(cml_v);
+        m_r->write(cmr_v);
     }
 
     *d_r = dir_r;
@@ -222,7 +221,7 @@ void Navigateur::print_pos()
 
 void Navigateur::updatePos()
 {
-    short vitesses[2];
+    short vitesses[2] = {10, 10};
     position->update(vitesses);
     pid_v_r.updateVitesse(vitesses[0]);
     pid_v_l.updateVitesse(vitesses[1]);
