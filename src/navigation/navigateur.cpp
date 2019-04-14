@@ -107,7 +107,7 @@ void Navigateur::update()
         dist_cons = pid_d.getConsigne();
     }
 
-    // if ((angle_relatif < PI + 0.3) && (angle_relatif > PI - 0.3)) i = -1;
+    if ((angle_relatif < PI + 0.3) && (angle_relatif > PI - 0.3)) i = -1;
 
     //  Calcul Consigne pour angle avec angle cible rafraichie
     if (i > 0) {
@@ -151,13 +151,13 @@ void Navigateur::update()
 
     if (debug_monitor) {
         print_pos();
-        printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f A:%.2f D:%.2f R:%.2f F:%s T:%s ",
+        printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f A:%.2f D:%.2f R:%.2f F:%s I:%s T:%s ",
             cible_x, cible_y, convert_degree(angle_absolu_destination),
             cmr, cml,
             angle_cons, dist_cons,
             convert_degree(angle_relatif),
             pid_d.actionFinished ? "T" : "F",
-            // i < 0 ? "Y" : "N",
+            i < 0 ? "Y" : "N",
             triggered == 1 ? "Y" : "N");
     }
 

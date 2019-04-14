@@ -223,3 +223,14 @@ void handleInput() {
 void updatePos() {
  nav.updatePos();
 }
+
+void test_rotation() {
+  nav.pid_a.setCommande(PI_OVER_TWO);
+
+  while (running) {
+    float command = nav.pid_a.getConsigne();
+
+    nav.pid_v_l.setCommande(command);
+    nav.pid_v_r.setCommande(-command);
+  }
+}
