@@ -7,7 +7,7 @@
 #include <math.h>
 
 // Durée de la rampe en seconde
-#define RAMPE_LENGHT 2.0f
+#define RAMPE_LENGHT 0.7f
 
 extern int debug_monitor;
 

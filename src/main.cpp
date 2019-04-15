@@ -34,6 +34,7 @@ Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l, &en
 void handleInput();
 void updatePos();
 void test_motors();
+void test_rotation();
 
 /* Global variables */
 
@@ -51,10 +52,10 @@ void setup() {
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
 
-  for (int i = 0; i < 3; i++) {
-    printf("%d...\n", i);
-    wait(1);
-  }
+  // for (int i = 0; i < 3; i++) {
+  //   printf("%d...\n", i);
+  //   wait(1);
+  // }
 
   nav.set_destination(0, 0);
 
@@ -74,17 +75,14 @@ void loop() {
 
 }
 
-int main()
-{
+int main() {
   setup();
   loop();
   // test_motors();
-
+  // test_rotation();
   return 0;
 
 }
-
-
 
 void test_motors() {
 
@@ -137,25 +135,20 @@ void test_motors() {
 
   nav.pid_v_l.reset();
   nav.pid_v_r.reset();
-  nav.pid_v_l.setCommande(0.1f);
-  nav.pid_v_r.setCommande(0.1f);
+  nav.pid_v_l.setCommande(0.2f);
+  nav.pid_v_r.setCommande(0.2f);
 
   printf("DEBUT\n");
 
-  int i = 0;
   while (running) {
-    short * useless;
-    wait(0.1);
-
     float cml = nav.pid_v_l.getConsigne();
     float cmr = nav.pid_v_r.getConsigne();
 
     printf("%f %f\n", cmr, cml);
-    cmr = max(cmr, 0.2f);
-    cml = max(cml, 0.2f);
+
     motor_l.write(cml);
     motor_r.write(cmr);
-    i++;
+
   }
 
   printf("FIN_TEST\n");
@@ -225,12 +218,34 @@ void updatePos() {
 }
 
 void test_rotation() {
-  nav.pid_a.setCommande(PI_OVER_TWO);
+  nav.pid_a.setCommande(-PI_OVER_TWO);
 
   while (running) {
     float command = nav.pid_a.getConsigne();
 
-    nav.pid_v_l.setCommande(command);
-    nav.pid_v_r.setCommande(-command);
+    int d_l = 0;
+    int d_r = 1;
+
+    nav.pid_v_l.setCommande(-command);
+    nav.pid_v_r.setCommande(command);
+
+    float cml = nav.pid_v_l.getConsigne();
+    float cmr = nav.pid_v_r.getConsigne();
+
+    limiter_consigne(&cml, &d_l);
+    limiter_consigne(&cmr, &d_r);
+
+    nav.print_pos();
+    printf("%f %f %f ", command, cml, cmr);
+
+
+    if (move) {
+      motor_l.write(cml);
+      motor_r.write(cmr);
+    }
+
+    direction_l = d_l;
+    direction_r = d_r;
+
   }
 }

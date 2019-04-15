@@ -33,4 +33,9 @@ float modulo_angle_relatif(float angle);
  */
 float convert_degree(float angle);
 
+void limiter_consigne(float* consigne, int *direction);
+
+float min (float a, float b);
+
+float max (float a, float b);
 #endif // __BASE_H_

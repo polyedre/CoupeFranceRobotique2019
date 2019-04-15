@@ -1,5 +1,6 @@
 #include "base.hpp"
 #include "config.hpp"
+#include <math.h>
 
 float carre(float a){
     return a * a;
@@ -33,4 +34,25 @@ float modulo_angle_relatif(float angle) {
 
 float convert_degree(float angle) {
     return angle / PI * 180;
+}
+
+void limiter_consigne(float* consigne, int *direction)
+{
+    if (*consigne < 0) {
+        *direction == 1 ? *direction = 0 : *direction = 1;
+        *consigne = abs(*consigne);
+    }
+    // Commenté car géré directement dans la fonction update
+    // consigne = min(*consigne, CONSIGNE_MAX);
+    *consigne = 0.06f + min(*consigne, 0.5f);
+}
+
+float min (float a, float b)
+{
+    return (a > b) ? b : a;
+}
+
+float max (float a, float b)
+{
+    return (a < b) ? b : a;
 }

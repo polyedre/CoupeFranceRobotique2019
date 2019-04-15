@@ -11,11 +11,13 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
 {
     position = _position;
 
+    float p_vitesse = 4.5;
+    float k = 0.023;
     // FIXME : Trouver bonnes valeurs de pid.
     PIDDistance _pid_d(0.08, 0.001, 0, 0.03, 1, position);
-    PIDAngle _pid_a(0.02, 0.01, 0.1, 0.02, 0, position);
-    PIDVitesse _pid_v_l(1, 0, 0, 0.02, 0, encod_l, 0.003);
-    PIDVitesse _pid_v_r(1, 0, 0, 0.02, 0, encod_r, 0.003);
+    PIDAngle _pid_a(0.05, 0.001, 0.001, 0.02, 0, position);
+    PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 0, encod_l, 0.004);
+    PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 0, encod_r, 0.004);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -43,28 +45,6 @@ void Navigateur::reset() {
     pid_a.reset();
     pid_d.reset();
     set_destination(0, 0);
-}
-
-void limiter_consigne(float* consigne, int *direction)
-{
-    if (*consigne < 0) {
-        *direction == 1 ? *direction = 0 : *direction = 1;
-        *consigne = abs(*consigne);
-    }
-    // Commenté car géré directement dans la fonction update
-    // consigne = min(*consigne, CONSIGNE_MAX);
-    *consigne = min(*consigne, 0.3f);
-    *consigne = max(*consigne, -0.3f);
-}
-
-float min (float a, float b)
-{
-    return (a > b) ? b : a;
-}
-
-float max (float a, float b)
-{
-    return (a < b) ? b : a;
 }
 
 void Navigateur::update()

@@ -26,13 +26,13 @@ class Navigateur
         void updatePos();
         PIDVitesse pid_v_l;
         PIDVitesse pid_v_r;
+        PIDDistance pid_d;
+        PIDAngle pid_a;
 
     private:
         float cible_x = 0;
         float cible_y = 0;
         float angle_reel;
-        PIDDistance pid_d;
-        PIDAngle pid_a;
         PwmOut* m_l;
         PwmOut* m_r;
         DigitalOut* d_l;
