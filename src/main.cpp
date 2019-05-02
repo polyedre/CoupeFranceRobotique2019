@@ -39,7 +39,7 @@ void test_rotation();
 /* Global variables */
 
 int debug_monitor = 1;
-int running = 1;
+int running = 0;
 int move = 1;
 
 void setup() {

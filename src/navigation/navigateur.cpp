@@ -6,6 +6,7 @@
 
 extern int debug_monitor;
 extern int move;
+extern int running;
 
 Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalOut *_d_l, DigitalOut *_d_r, Encoder * encod_l, Encoder * encod_r)
 {
@@ -170,41 +171,43 @@ void Navigateur::rotate_by(float angle)
 
     while (1) {
 
-        float consigne = pid_a.getConsigne();
+        if (running) {
+            float consigne = pid_a.getConsigne();
 
-        consigne = min(consigne, 0.4f);
+            consigne = min(consigne, 0.4f);
 
-        float cmr = -consigne;
-        float cml = consigne;
+            float cmr = -consigne;
+            float cml = consigne;
 
-        int dir_l = 0;
-        int dir_r = 0;
+            int dir_l = 0;
+            int dir_r = 0;
 
-        pid_v_r.setCommande(cmr);
-        float cmr_v = pid_v_r.getConsigne();
+            pid_v_r.setCommande(cmr);
+            float cmr_v = pid_v_r.getConsigne();
 
-        pid_v_l.setCommande(cml);
-        float cml_v = pid_v_l.getConsigne();
+            pid_v_l.setCommande(cml);
+            float cml_v = pid_v_l.getConsigne();
 
-        limiter_consigne(&cmr, &dir_r);
-        limiter_consigne(&cml, &dir_l);
+            limiter_consigne(&cmr, &dir_r);
+            limiter_consigne(&cml, &dir_l);
 
-        if (debug_monitor) {
+            if (debug_monitor) {
+                print_pos();
+                printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f ",
+                    cible_x, cible_y, convert_degree(angle_dest),
+                    cmr, cml);
+            }
+
+            if (move) {
+                m_l->write(cml_v);
+                m_r->write(cmr_v);
+            }
+
+            *d_r = dir_r;
+            *d_l = dir_l;
+
             print_pos();
-            printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f ",
-                cible_x, cible_y, convert_degree(angle_dest),
-                cmr, cml);
         }
-
-        if (move) {
-            m_l->write(cml_v);
-            m_r->write(cmr_v);
-        }
-
-        *d_r = dir_r;
-        *d_l = dir_l;
-
-        print_pos();
     }
 }
 
@@ -223,8 +226,8 @@ void Navigateur::avancer(float distance)
 
     pid_d.setCommande(new_x, new_y);
 
-    while (!pid_d.finished) {
-        update();
+    while (!pid_d.actionFinished) {
+        if (running) update();
     }
 }
 
