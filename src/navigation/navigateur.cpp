@@ -14,10 +14,10 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     float p_vitesse = 4.5;
     float k = 0.023;
     // FIXME : Trouver bonnes valeurs de pid.
-    PIDDistance _pid_d(0.08, 0.001, 0, 0.03, 1, position);
-    PIDAngle _pid_a(0.05, 0.001, 0.001, 0.02, 0, position);
-    PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 0, encod_l, 0.004);
-    PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 0, encod_r, 0.004);
+    PIDDistance _pid_d(0.08, 0.001, 0.01, 0.03, 1, position);
+    PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
+    PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 0, encod_l, 0.007);
+    PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 0, encod_r, 0.007);
 
     pid_d = _pid_d;
     pid_a = _pid_a;
@@ -146,8 +146,6 @@ void Navigateur::update()
 
     // printf("Consignes : (l : %f) (r : %f)\r\n", cmr, cml);
 
-
-
     if (move) {
         m_l->write(cml_v);
         m_r->write(cmr_v);
@@ -161,11 +159,12 @@ void Navigateur::update()
 /*
  * Tourne le robot de `angle`. Angle représente l'angle relatif,
  * il peut être positif ou négatif.
+ * TODO : Tester cette fonction
  */
 void Navigateur::rotate_by(float angle)
 {
     float theta = position->get_theta();
-    float angle_dest = theta + angle;
+    float angle_dest = modulo_angle_absolu(theta + angle);
 
     pid_a.setCommande(angle_dest);
 
@@ -181,11 +180,26 @@ void Navigateur::rotate_by(float angle)
         int dir_l = 0;
         int dir_r = 0;
 
+        pid_v_r.setCommande(cmr);
+        float cmr_v = pid_v_r.getConsigne();
+
+        pid_v_l.setCommande(cml);
+        float cml_v = pid_v_l.getConsigne();
+
         limiter_consigne(&cmr, &dir_r);
         limiter_consigne(&cml, &dir_l);
 
-        m_l->write(cml);
-        m_r->write(cmr);
+        if (debug_monitor) {
+            print_pos();
+            printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f ",
+                cible_x, cible_y, convert_degree(angle_dest),
+                cmr, cml);
+        }
+
+        if (move) {
+            m_l->write(cml_v);
+            m_r->write(cmr_v);
+        }
 
         *d_r = dir_r;
         *d_l = dir_l;
@@ -193,6 +207,29 @@ void Navigateur::rotate_by(float angle)
         print_pos();
     }
 }
+
+/*
+ * Avance de `distance` mètres.
+ * TODO : Tester cette fonction
+ */
+void Navigateur::avancer(float distance)
+{
+    float x = position->get_x();
+    float y = position->get_y();
+    float theta = position->get_theta();
+
+    float new_x = x + distance * cos(theta);
+    float new_y = y + distance * sin(theta);
+
+    pid_d.setCommande(new_x, new_y);
+
+    while (!pid_d.finished) {
+        update();
+    }
+}
+
+
+
 
 void Navigateur::print_pos()
 {

@@ -65,7 +65,26 @@ void loop() {
 
     while (1) {
     if (running){
-      nav.update();
+
+      nav.set_destination(1, 0);
+      while (!nav.pid_d.actionFinished) {
+        nav.update();
+      }
+
+      nav.set_destination(1, 1);
+      while (!nav.pid_d.actionFinished) {
+        nav.update();
+      }
+
+      nav.set_destination(0, 1);
+      while (!nav.pid_d.actionFinished) {
+        nav.update();
+      }
+
+      nav.set_destination(0, 0);
+      while (!nav.pid_d.actionFinished) {
+        nav.update();
+      }
     } else {
       motor_l = 0;
       motor_r = 0;
@@ -204,12 +223,28 @@ void handleInput() {
     setup();
   }
 
-  if (c == 'p') {
+  if (c == 'p') { // Print position
     nav.print_pos();
   }
 
-  if (c == 't') {
+  if (c == 't') { // Run Test
     test_motors();
+  }
+
+  if (c == 'a') { // Avancer
+    float d;
+    printf("\nd = ");
+    usb.scanf("%f", &d);
+
+    nav.avancer(d);
+  }
+
+  if (c == 'T') { // Tourner
+    float angle;
+    printf("\nangle = ");
+    usb.scanf("%f", &angle);
+
+    nav.avancer(angle);
   }
 }
 

@@ -22,6 +22,7 @@ class Navigateur
         void print_pos();
         Position* position;
         void rotate_by(float angle);
+        void avancer(float distance);
         void reset();
         void updatePos();
         PIDVitesse pid_v_l;
