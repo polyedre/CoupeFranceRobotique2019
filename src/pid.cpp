@@ -63,11 +63,11 @@ void PID::AccumulerErreur(float erreur){
 float PID::getConsigne(){
     erreur = this->calculerErreur();
     if (abs(erreur) < erreurSeuil) {
-        if (!actionFinished) reset();
+        reset();
         actionFinished = 1;
     } else {
-    AccumulerErreur(erreur);
-    actionFinished = 0;
+        AccumulerErreur(erreur);
+        actionFinished = 0;
     }
     return calculerConsigne();
 }
@@ -85,6 +85,7 @@ void PID::reset(){
         fifo.pop();
     }
     time.reset();
+    actionFinished = 0;
 }
 
 /* --- PID en DISTANCE --- */
@@ -132,6 +133,7 @@ float PIDAngle::calculerErreur(){
 
 void PIDAngle::setCommande(float theta){
    commande_theta = theta;
+    actionFinished = 0;
 }
 
 float calculerAngle(float x1, float y1, float x2, float y2)

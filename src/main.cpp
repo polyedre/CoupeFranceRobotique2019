@@ -13,8 +13,8 @@
 DigitalOut led(LED3);
 Serial usb(USBTX, USBRX);
 
-Encoder enc_l(TIM4); // PD12 - PD13
-Encoder enc_r(TIM3); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
+Encoder enc_l(TIM3); // PD12 - PD13
+Encoder enc_r(TIM4); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
 
 PwmOut motor_l(PB_13); // TODO changer les noms des pins
 PwmOut motor_r(PB_15);
@@ -39,7 +39,7 @@ void test_rotation();
 /* Global variables */
 
 int debug_monitor = 1;
-int running = 0;
+int running = 1;
 int move = 1;
 
 void setup() {
@@ -66,36 +66,20 @@ void loop() {
     while (1) {
     if (running){
 
-      nav.set_destination(1, 0);
-      while (!nav.pid_d.actionFinished) {
-        nav.update();
-      }
+      nav.avancer(0.3);
+      nav.rotate_by(PI_OVER_TWO);
 
-      nav.set_destination(1, 1);
-      while (!nav.pid_d.actionFinished) {
-        nav.update();
-      }
-
-      nav.set_destination(0, 1);
-      while (!nav.pid_d.actionFinished) {
-        nav.update();
-      }
-
-      nav.set_destination(0, 0);
-      while (!nav.pid_d.actionFinished) {
-        nav.update();
-      }
-    } else {
-      motor_l = 0;
-      motor_r = 0;
-      wait(0.5);
     }
   }
 
 }
 
 int main() {
+  printf("Setup\n");
   setup();
+  printf("loop\n");
+  // nav.avancer(0.5);
+  // nav.rotate_by(PI_OVER_TWO);
   loop();
   // test_motors();
   // test_rotation();
@@ -105,75 +89,77 @@ int main() {
 
 void test_motors() {
 
-  // // Avancer tout droit
-  // motor_l.write(0.2f);
-  // direction_l = 0;
-  // motor_r.write(0.2f);
-  // direction_r = 1;
-  
-  // wait(1);
-
-  // motor_l.write(0.0f);
-  // motor_r.write(0.0f);
-
-  // // wait(2);
-
-  // // Reculer tout droit
-  // motor_l.write(0.2f);
-  // direction_l = 1;
-  // motor_r.write(0.2f);
-  // direction_r = 0;
-
-  // wait(1);
-
-  // motor_l.write(0.0f);
-  // motor_r.write(0.0f);
-
-  // wait(1);
-
-  // // Tourner
-  // motor_l.write(0.2f);
-  // direction_l = 1;
-  // motor_r.write(0.2f);
-  // direction_r = 1;
-
-  // wait(1);
-
-  // // Tourner
-  // direction_l = 0;
-  // direction_r = 0;
-
-  // wait(1);
-
-  motor_l.write(0.0f);
-  motor_r.write(0.0f);
-
-  // tourner
+  printf("Avancer\n");
+  // Avancer tout droit
+  motor_l.write(0.1f);
   direction_l = 0;
+  motor_r.write(0.1f);
   direction_r = 1;
+  
+  wait(1);
 
-  nav.pid_v_l.reset();
-  nav.pid_v_r.reset();
-  nav.pid_v_l.setCommande(0.2f);
-  nav.pid_v_r.setCommande(0.2f);
+  // motor_l.write(0.0f);
+  // motor_r.write(0.0f);
 
-  printf("DEBUT\n");
+  printf("Reculer\n");
+  // wait(2);
 
-  while (running) {
-    float cml = nav.pid_v_l.getConsigne();
-    float cmr = nav.pid_v_r.getConsigne();
+  // Reculer tout droit
+  // motor_l.write(0.2f);
+  direction_l = 1;
+  // motor_r.write(0.2f);
+  direction_r = 0;
 
-    printf("%f %f\n", cmr, cml);
-
-    motor_l.write(cml);
-    motor_r.write(cmr);
-
-  }
-
-  printf("FIN_TEST\n");
+  wait(1);
 
   motor_l.write(0.0f);
   motor_r.write(0.0f);
+
+  // wait(1);
+
+  // // Tourner
+  // motor_l.write(0.2f);
+  // direction_l = 1;
+  // motor_r.write(0.2f);
+  // direction_r = 1;
+
+  // wait(1);
+
+  // // Tourner
+  // direction_l = 0;
+  // direction_r = 0;
+
+  // wait(1);
+
+  // motor_l.write(0.0f);
+  // motor_r.write(0.0f);
+
+  // // tourner
+  // direction_l = 0;
+  // direction_r = 1;
+
+  // nav.pid_v_l.reset();
+  // nav.pid_v_r.reset();
+  // nav.pid_v_l.setCommande(0.2f);
+  // nav.pid_v_r.setCommande(0.2f);
+
+  // printf("DEBUT\n");
+
+  // while (running) {
+  //   float cml = nav.pid_v_l.getConsigne();
+  //   float cmr = nav.pid_v_r.getConsigne();
+
+  //   printf("%f %f\n", cmr, cml);
+
+  //   motor_l.write(cml);
+  //   motor_r.write(cmr);
+
+  // }
+
+  // printf("FIN_TEST\n");
+
+  // motor_l.write(0.0f);
+  // motor_r.write(0.0f);
 }
 
 void handleInput() {
@@ -183,12 +169,20 @@ void handleInput() {
     running = running ? 0 : 1;
     if (running) printf("\nComputation activé.\n");
     else printf("\nComputation désactivé.\n");
+    if (!running) {
+      motor_l.write(0.0f);
+      motor_r.write(0.0f);
+    }
   }
 
   if (c == 'm') {
     move = move ? 0 : 1;
     if (move) printf("\nMouvement activé.\n");
     else printf("\nMouvement désactivé.\n");
+    if (!move) {
+      motor_l.write(0.0f);
+      motor_r.write(0.0f);
+    }
   }
 
   if (c == 's') { // set destination

@@ -16,7 +16,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r, DigitalO
     float k = 0.023;
     // FIXME : Trouver bonnes valeurs de pid.
     PIDDistance _pid_d(0.08, 0.001, 0.01, 0.03, 1, position);
-    PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
+    PIDAngle _pid_a(0.01, 0.001, 0.001, 0.02, 0, position);
+    // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
     PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 0, encod_l, 0.007);
     PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 0, encod_r, 0.007);
 
@@ -169,18 +170,18 @@ void Navigateur::rotate_by(float angle)
 
     pid_a.setCommande(angle_dest);
 
-    while (1) {
+    while (!pid_a.actionFinished) {
 
         if (running) {
             float consigne = pid_a.getConsigne();
 
             consigne = min(consigne, 0.4f);
 
-            float cmr = -consigne;
-            float cml = consigne;
+            float cmr = consigne;
+            float cml = -consigne;
 
             int dir_l = 0;
-            int dir_r = 0;
+            int dir_r = 1;
 
             pid_v_r.setCommande(cmr);
             float cmr_v = pid_v_r.getConsigne();
@@ -188,15 +189,15 @@ void Navigateur::rotate_by(float angle)
             pid_v_l.setCommande(cml);
             float cml_v = pid_v_l.getConsigne();
 
-            limiter_consigne(&cmr, &dir_r);
-            limiter_consigne(&cml, &dir_l);
-
             if (debug_monitor) {
                 print_pos();
-                printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f ",
+                printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f CA:%.2f ",
                     cible_x, cible_y, convert_degree(angle_dest),
-                    cmr, cml);
+                    cmr, cml, consigne);
             }
+
+            limiter_consigne(&cmr, &dir_r);
+            limiter_consigne(&cml, &dir_l);
 
             if (move) {
                 m_l->write(cml_v);
@@ -206,9 +207,11 @@ void Navigateur::rotate_by(float angle)
             *d_r = dir_r;
             *d_l = dir_l;
 
-            print_pos();
         }
     }
+    pid_a.reset();
+    m_l->write(0);
+    m_r->write(0);
 }
 
 /*
@@ -224,11 +227,20 @@ void Navigateur::avancer(float distance)
     float new_x = x + distance * cos(theta);
     float new_y = y + distance * sin(theta);
 
-    pid_d.setCommande(new_x, new_y);
+    set_destination(new_x, new_y);
 
     while (!pid_d.actionFinished) {
-        if (running) update();
+        if (running) {
+            update();
+        }
+        else {
+            wait(0.5);
+        }
     }
+
+    pid_d.reset();
+    m_l->write(0);
+    m_r->write(0);
 }
 
 
