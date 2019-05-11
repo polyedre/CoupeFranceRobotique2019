@@ -58,6 +58,8 @@ void Position::update(short vitesses[])
 
     // printf("(dx, del, der) = (%f, %f, %f)\n", dx, del, der);
 
+    // TODO : check la position du calcul de theta
+
     x += dx;
     y += dy;
     theta = theta + dTh;
