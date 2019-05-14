@@ -8,10 +8,13 @@
 #define PI 3.141592653589793f
 #define PI_OVER_TWO 1.57079632679f
 // Il y a un terme correctif
-#define DIAMETER (0.247f * 0.9190936949450285f) // largeur en mètres entre les deux encodeurs
-// ( ATTENTION : la valeur est arbitraire !)
-#define ENCODEUR_ECHELLE 45703.0f // tick par mètres
-// Ancienne valeur : 43723.0f // tick par mètres
+#define DIAMETER                                                               \
+  (0.247f * 0.9190936949450285f) // largeur en mètres entre les deux encodeurs
+                                 // ( ATTENTION : la valeur est arbitraire !)
+
+#define ENCODEUR_ECHELLE 44669.0f // ticks par mètres
+// Ancienne valeur 2 : 45703.0f   // ticks par mètres
+// Ancienne valeur   : 43723.0f   // ticks par mètres
 
 #define CONSIGNE_MAX 0.4f
 
