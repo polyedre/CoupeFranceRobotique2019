@@ -1,12 +1,12 @@
-#include "mbed.h"
+#include "base.hpp"
+#include "config.hpp"
 #include "encoder.hpp"
+#include "mbed.h"
 #include "navigation/navigateur.hpp"
 #include "navigation/vecteur2D.hpp"
-#include "position.hpp"
 #include "pid.hpp"
-#include "config.hpp"
+#include "position.hpp"
 #include <math.h>
-#include "base.hpp"
 
 /* Class objects */
 
@@ -27,7 +27,8 @@ DigitalOut beak_l(PF_14);
 Ticker updatePos_t;
 
 Position pos(&enc_l, &enc_r);
-Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l, &enc_r);
+Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l,
+               &enc_r);
 
 /* Prototypes */
 
@@ -58,20 +59,29 @@ void setup() {
   // }
 
   nav.set_destination(0, 0);
-
 }
 
 void loop() {
 
-    while (1) {
-    if (running){
+  // Homologation
 
-      nav.avancer(0.3);
-      nav.rotate_by(PI_OVER_TWO);
+  printf("Avancer\n");
+  nav.avancer(0.35f);
 
-    }
-  }
+  printf("Demi-tour\n");
+  nav.rotate_by(PI);
 
+  printf("Avancer\n");
+  nav.avancer(0.30f);
+
+  //   while (1) {
+  //   if (running){
+
+  //     nav.avancer(0.3);
+  //     nav.rotate_by(PI_OVER_TWO);
+
+  //   }
+  // }
 }
 
 int main() {
@@ -84,7 +94,6 @@ int main() {
   // test_motors();
   // test_rotation();
   return 0;
-
 }
 
 void test_motors() {
@@ -95,7 +104,7 @@ void test_motors() {
   direction_l = 0;
   motor_r.write(0.1f);
   direction_r = 1;
-  
+
   wait(1);
 
   // motor_l.write(0.0f);
@@ -167,8 +176,10 @@ void handleInput() {
 
   if (c == 'q') {
     running = running ? 0 : 1;
-    if (running) printf("\nComputation activé.\n");
-    else printf("\nComputation désactivé.\n");
+    if (running)
+      printf("\nComputation activé.\n");
+    else
+      printf("\nComputation désactivé.\n");
     if (!running) {
       motor_l.write(0.0f);
       motor_r.write(0.0f);
@@ -177,8 +188,10 @@ void handleInput() {
 
   if (c == 'm') {
     move = move ? 0 : 1;
-    if (move) printf("\nMouvement activé.\n");
-    else printf("\nMouvement désactivé.\n");
+    if (move)
+      printf("\nMouvement activé.\n");
+    else
+      printf("\nMouvement désactivé.\n");
     if (!move) {
       motor_l.write(0.0f);
       motor_r.write(0.0f);
@@ -200,13 +213,14 @@ void handleInput() {
     nav.set_destination(x, y);
 
     printf("\nNew destination set : (%f, %f)\n", x, y);
-
   }
 
   if (c == 'd') { // Toggle debug
     debug_monitor = debug_monitor ? 0 : 1;
-    if (debug_monitor) printf("\nDebug activé.\n");
-    else printf("\nDebug désactivé.\n");
+    if (debug_monitor)
+      printf("\nDebug activé.\n");
+    else
+      printf("\nDebug désactivé.\n");
   }
 
   if (c == 'r') { // reset
@@ -242,9 +256,7 @@ void handleInput() {
   }
 }
 
-void updatePos() {
- nav.updatePos();
-}
+void updatePos() { nav.updatePos(); }
 
 void test_rotation() {
   nav.pid_a.setCommande(-PI_OVER_TWO);
@@ -267,7 +279,6 @@ void test_rotation() {
     nav.print_pos();
     printf("%f %f %f ", command, cml, cmr);
 
-
     if (move) {
       motor_l.write(cml);
       motor_r.write(cmr);
@@ -275,6 +286,5 @@ void test_rotation() {
 
     direction_l = d_l;
     direction_r = d_r;
-
   }
 }
