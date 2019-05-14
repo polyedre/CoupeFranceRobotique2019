@@ -1,8 +1,8 @@
 #include "../base.hpp"
 #include "../config.hpp"
 #include "navigateur.hpp"
-#include <cmath.h>
-#include <cstdio.h>
+#include <math.h>
+#include <stdio.h>
 
 extern int debug_monitor;
 extern int move;
@@ -13,14 +13,14 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
                        Encoder *encod_r) {
   position = _position;
 
-  float p_vitesse = 4.5;
+  float p_vitesse = 8.5;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.08, 0.001, 0.01, 0.03, 1, position);
-  PIDAngle _pid_a(0.01, 0.001, 0.001, 0.02, 0, position);
+  PIDDistance _pid_d(0.4, 0.001, 0.000, 0.03, 1, position);
+  PIDAngle _pid_a(0.2, 0.00005, 0.000, 0.02, 0, position);
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 0, encod_l, 0.007);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 0, encod_r, 0.007);
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.017, 0, 0.001, 0, encod_l, 0.007);
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.017, 0, 0.001, 0, encod_r, 0.007);
 
   pid_d = _pid_d;
   pid_a = _pid_a;
@@ -87,6 +87,8 @@ void Navigateur::update() {
   if ((abs(angle_relatif) < 0.3) || (abs(abs(angle_relatif) - PI) < 0.3)) {
     triggered = 1;
     dist_cons = pid_d.getConsigne();
+  } else {
+    pid_d.reset();
   }
 
   if ((angle_relatif < PI + 0.3) && (angle_relatif > PI - 0.3))
@@ -187,12 +189,13 @@ void Navigateur::rotate_by(float angle) {
 
       if (debug_monitor) {
         print_pos();
-        printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f CA:%.2f ", cible_x,
-               cible_y, convert_degree(angle_dest), cmr, cml, consigne);
+        printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f CA:%.2f rv:%.2f lv:%.2f",
+               cible_x, cible_y, convert_degree(angle_dest), cmr, cml, consigne,
+               cmr_v, cml_v);
       }
 
-      limiter_consigne(&cmr, &dir_r);
-      limiter_consigne(&cml, &dir_l);
+      limiter_consigne(&cmr_v, &dir_r);
+      limiter_consigne(&cml_v, &dir_l);
 
       if (move) {
         m_l->write(cml_v);
@@ -203,6 +206,7 @@ void Navigateur::rotate_by(float angle) {
       *d_l = dir_l;
     }
   }
+  pid_d.reset();
   pid_a.reset();
   m_l->write(0);
   m_r->write(0);
@@ -231,6 +235,7 @@ void Navigateur::avancer(float distance) {
   }
 
   pid_d.reset();
+  pid_a.reset();
   m_l->write(0);
   m_r->write(0);
 }
