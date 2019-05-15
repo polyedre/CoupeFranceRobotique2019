@@ -1,3 +1,4 @@
+#include "GP2.hpp"
 #include "base.hpp"
 #include "config.hpp"
 #include "encoder.hpp"
@@ -25,10 +26,24 @@ DigitalOut direction_l(PE_11);
 DigitalOut beak_l(PF_14);
 
 Ticker updatePos_t;
+Ticker checkGP2_t;
 
 Position pos(&enc_l, &enc_r);
 Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l,
                &enc_r);
+
+// // TODO : Donner des ports aux GP2
+// AnalogIn gp2_analog_1();
+// AnalogIn gp2_analog_2();
+// AnalogIn gp2_analog_3();
+// AnalogIn gp2_analog_4();
+
+// GP2 gp2_list[4] = {
+// GP2(gp2_analog_1, 0.3),
+// GP2(gp2_analog_2, 0.3),
+// GP2(gp2_analog_3, 0.3),
+// GP2(gp2_analog_4, 0.3),
+// }
 
 /* Prototypes */
 
@@ -36,6 +51,7 @@ void handleInput();
 void updatePos();
 void test_motors();
 void test_rotation();
+void check_all_GP2();
 
 /* Global variables */
 
@@ -52,6 +68,9 @@ void setup() {
 
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
+  checkGP2_t.attach(&check_all_GP2, 0.1f);
+
+  // detected_all(gp2_list, 4);
 
   // for (int i = 0; i < 3; i++) {
   //   printf("%d...\n", i);
@@ -257,6 +276,11 @@ void handleInput() {
 }
 
 void updatePos() { nav.updatePos(); }
+
+void check_all_GP2() {
+  if (detected_all(gp2_list, 4))
+    move = 0;
+}
 
 void test_rotation() {
   nav.pid_a.setCommande(-PI_OVER_TWO);
