@@ -13,11 +13,12 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
                        Encoder *encod_r) {
   position = _position;
 
-  float p_vitesse = 8.5;
+  float p_vitesse = 10;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.4, 0.001, 0.000, 0.03, 1, position);
-  PIDAngle _pid_a(0.2, 0.00005, 0.000, 0.02, 0, position);
+  PIDDistance _pid_d(0.8, 0.001, 0.000, 0.015, 1,
+                     position); // 0.5cm de précision
+  PIDAngle _pid_a(0.4, 0.00005, 0.000, 0.005, 0, position);
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
   PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.017, 0, 0.001, 0, encod_l, 0.007);
   PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.017, 0, 0.001, 0, encod_r, 0.007);
@@ -160,7 +161,6 @@ void Navigateur::update() {
 /*
  * Tourne le robot de `angle`. Angle représente l'angle relatif,
  * il peut être positif ou négatif.
- * TODO : Tester cette fonction
  */
 void Navigateur::rotate_by(float angle) {
   float theta = position->get_theta();
@@ -225,6 +225,27 @@ void Navigateur::avancer(float distance) {
   float new_y = y + distance * sin(theta);
 
   set_destination(new_x, new_y);
+
+  while (!pid_d.actionFinished) {
+    if (running) {
+      update();
+    } else {
+      wait(0.5);
+    }
+  }
+
+  pid_d.reset();
+  pid_a.reset();
+  m_l->write(0);
+  m_r->write(0);
+}
+
+/*
+ * Va à la position `x`, `y` mètres.
+ */
+void Navigateur::go_to(float cx, float cy) {
+
+  set_destination(cx, cy);
 
   while (!pid_d.actionFinished) {
     if (running) {

@@ -67,7 +67,7 @@ void setup() {
   printf("\r\nInitialisation du programme.\r\n");
 
   usb.attach(&handleInput);
-  updatePos_t.attach(&updatePos, 0.001f);
+  updatePos_t.attach(&updatePos, 0.0001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
 
   // detected_all(gp2_list, 4);
@@ -82,17 +82,45 @@ void setup() {
 
 void loop() {
 
-  // Homologation
+  // ====== GOTO ======
 
-  printf("Avancer\n");
-  nav.avancer(0.35f);
+  nav.go_to(0.5, 0.0);
+  nav.go_to(0.5, 0.5);
+  nav.go_to(1.0, 0.5);
+  nav.go_to(1.0, 0.0);
+  printf("\nLast run\n");
+  nav.go_to(0.0, 0.0);
 
-  printf("Demi-tour\n");
-  nav.rotate_by(PI);
+  //  // ======  Homologation  ======
 
-  printf("Avancer\n");
-  nav.avancer(0.30f);
+  // printf("\nAvancer\n");
+  // nav.avancer(0.4);
 
+  // printf("\nPI/2\n");
+  // nav.rotate_by(PI_OVER_TWO);
+
+  // printf("\nAvancer\n");
+  // nav.avancer(0.4);
+
+  // printf("\nPI/2\n");
+  // nav.rotate_by(-PI_OVER_TWO);
+
+  // printf("\nAvancer\n");
+  // nav.avancer(0.4);
+
+  // printf("\nPI/2\n");
+  // nav.rotate_by(-PI_OVER_TWO);
+
+  // printf("\nAvancer\n");
+  // nav.avancer(0.4);
+
+  // printf("\nPI/2\n");
+  // nav.rotate_by(-PI_OVER_TWO);
+
+  // printf("\nAvancer\n");
+  // nav.avancer(0.7);
+
+  //   ==========  CARRÉ  ==============
   //   while (1) {
   //   if (running){
 
