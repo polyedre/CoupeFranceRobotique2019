@@ -21,9 +21,9 @@ PwmOut motor_l(PB_13); // TODO changer les noms des pins
 PwmOut motor_r(PB_15);
 
 DigitalOut direction_r(PF_13);
-DigitalOut breal_r(PE_9);
+DigitalOut break_r(PE_9);
 DigitalOut direction_l(PE_11);
-DigitalOut beak_l(PF_14);
+DigitalOut break_l(PF_14);
 
 Ticker updatePos_t;
 Ticker checkGP2_t;
@@ -33,17 +33,19 @@ Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l,
                &enc_r);
 
 // // TODO : Donner des ports aux GP2
-// AnalogIn gp2_analog_1();
+AnalogIn gp2_analog_1(PC_0);
 // AnalogIn gp2_analog_2();
 // AnalogIn gp2_analog_3();
 // AnalogIn gp2_analog_4();
 
-// GP2 gp2_list[4] = {
-// GP2(gp2_analog_1, 0.3),
-// GP2(gp2_analog_2, 0.3),
-// GP2(gp2_analog_3, 0.3),
-// GP2(gp2_analog_4, 0.3),
-// }
+DigitalOut alim_gp2_1(PC_3);
+
+GP2 gp2_list[1] = {
+    GP2(&gp2_analog_1, 0.5),
+    // GP2(gp2_analog_2, 0.3),
+    // GP2(gp2_analog_3, 0.3),
+    // GP2(gp2_analog_4, 0.3),
+};
 
 /* Prototypes */
 
@@ -52,6 +54,7 @@ void updatePos();
 void test_motors();
 void test_rotation();
 void check_all_GP2();
+void frein();
 
 /* Global variables */
 
@@ -70,7 +73,9 @@ void setup() {
   updatePos_t.attach(&updatePos, 0.0001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
 
-  // detected_all(gp2_list, 4);
+  alim_gp2_1 = 1;
+
+  // detected_all(gp2_list, 1);
 
   // for (int i = 0; i < 3; i++) {
   //   printf("%d...\n", i);
@@ -240,8 +245,7 @@ void handleInput() {
     else
       printf("\nMouvement désactivé.\n");
     if (!move) {
-      motor_l.write(0.0f);
-      motor_r.write(0.0f);
+      frein();
     }
   }
 
@@ -285,29 +289,15 @@ void handleInput() {
   if (c == 't') { // Run Test
     test_motors();
   }
-
-  if (c == 'a') { // Avancer
-    float d;
-    printf("\nd = ");
-    usb.scanf("%f", &d);
-
-    nav.avancer(d);
-  }
-
-  if (c == 'T') { // Tourner
-    float angle;
-    printf("\nangle = ");
-    usb.scanf("%f", &angle);
-
-    nav.avancer(angle);
-  }
 }
 
 void updatePos() { nav.updatePos(); }
 
 void check_all_GP2() {
-  if (detected_all(gp2_list, 4))
-    move = 0;
+  if (detected_all(gp2_list, 1)) {
+    frein();
+    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TRIGGERED!!!!!!!!!!!!!!!");
+  }
 }
 
 void test_rotation() {
@@ -339,4 +329,14 @@ void test_rotation() {
     direction_l = d_l;
     direction_r = d_r;
   }
+}
+
+void frein() {
+  motor_l.write(0.001f);
+  motor_r.write(0.001f);
+  break_l = 1;
+  break_r = 1;
+  wait(0.5f);
+  break_l = 0;
+  break_r = 0;
 }

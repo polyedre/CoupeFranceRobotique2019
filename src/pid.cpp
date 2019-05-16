@@ -7,7 +7,7 @@
 #include <queue>
 
 // Durée de la rampe en seconde
-#define RAMPE_LENGHT 1.5f
+#define RAMPE_LENGHT 3.0f
 // ancienne rampe : 0.7f OK pour angle
 
 extern int debug_monitor;

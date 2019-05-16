@@ -1,19 +1,22 @@
 #ifndef __GP2_H_
 #define __GP2_H_
 
-bool detected_all(GP2 gp2_list[], int gp2_nb);
+#include "mbed.h"
 
 class GP2 {
 public:
-  GP2(AnalogIn input, float distance);
+  GP2(AnalogIn *input, float distance);
+  GP2();
 
-  bool detected();
+  int detected();
   float get_Distance();
   void debug();
 
 private:
-  AnalogIn input;
+  AnalogIn *input;
   float distance_seuil;
 };
+
+int detected_all(GP2 *gp2_list, int gp2_nb);
 
 #endif // __GP2_H_

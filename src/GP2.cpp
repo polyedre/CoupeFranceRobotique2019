@@ -1,22 +1,28 @@
 #include "GP2.hpp"
 
-#define GP2_COEF 0.01f
+#define GP2_COEF (1.0f / 0.93f)
 
-GP2::GP2(AnalogIn _input, float _distance_seuil) {
+// 1.0  -> 6 cm
+// 0.4  -> 20 cm
+// 0.72 -> 10 cm
+// O.19 -> 50 cm
+
+GP2::GP2() {}
+GP2::GP2(AnalogIn *_input, float _distance_seuil) {
   input = _input;
-  _distance_seuil = _distance_seuil;
+  distance_seuil = _distance_seuil;
 }
 
-bool GP2::detected() { return input.read() < distance_seuil * GP2_COEF; }
+int GP2::detected() { return input->read() * GP2_COEF > distance_seuil; }
 
-float GP2::get_Distance() { return distance_seuil * GP2_COEF; }
+float GP2::get_Distance() { return (input->read() * GP2_COEF); }
 
-void GP2::debug() { printf("\nGP2 : %d, %f", input.read(), get_Distance()); }
+void GP2::debug() { printf("\nGP2 : %f, %f", input->read(), get_Distance()); }
 
-bool detected_all(GP2 gp2_list[], int gp2_nb) {
+int detected_all(GP2 gp2_list[], int gp2_nb) {
   for (int i = 0; i < gp2_nb; i++) {
-    if (!gp2_list[i].detected())
-      return true;
+    if (gp2_list[i].detected())
+      return 1;
   }
-  return false;
+  return 0;
 }

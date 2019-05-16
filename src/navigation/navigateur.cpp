@@ -16,12 +16,12 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   float p_vitesse = 10;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.8, 0.001, 0.000, 0.015, 1,
+  PIDDistance _pid_d(0.8, 0.001, 0.000, 0.035, 1,
                      position); // 0.5cm de précision
   PIDAngle _pid_a(0.4, 0.00005, 0.000, 0.005, 0, position);
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.017, 0, 0.001, 0, encod_l, 0.007);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.017, 0, 0.001, 0, encod_r, 0.007);
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.0001, 0, 0.001, 0, encod_l, 0.007);
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.0001, 0, 0.001, 0, encod_r, 0.007);
 
   pid_d = _pid_d;
   pid_a = _pid_a;
@@ -103,11 +103,11 @@ void Navigateur::update() {
   }
   angle_cons = pid_a.getConsigne();
 
-  dist_cons = min(dist_cons, 0.4f);
-  angle_cons = min(angle_cons, 0.4f);
+  dist_cons = min(dist_cons, 0.07);
+  angle_cons = min(angle_cons, 0.1);
 
-  dist_cons = max(dist_cons, -0.4f);
-  angle_cons = max(angle_cons, -0.4f);
+  dist_cons = max(dist_cons, -0.07f);
+  angle_cons = max(angle_cons, -0.1f);
 
   /*
     Initialisation des directions pour que les moteurs tournent dans
