@@ -11,6 +11,7 @@ public:
   int detected();
   float get_Distance();
   void debug();
+  float real_distance;
 
 private:
   AnalogIn *input;
