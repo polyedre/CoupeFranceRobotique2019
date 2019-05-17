@@ -19,10 +19,14 @@ float GP2::get_Distance() { return (input->read() * GP2_COEF); }
 
 void GP2::debug() { printf("\nGP2 : %f, %f", input->read(), get_Distance()); }
 
+/*
+ * Return the id of the first GP2 that is triggered
+ * or 0 else.
+ * */
 int detected_all(GP2 gp2_list[], int gp2_nb) {
   for (int i = 0; i < gp2_nb; i++) {
     if (gp2_list[i].detected())
-      return 1;
+      return i + 1;
   }
   return 0;
 }

@@ -291,15 +291,6 @@ void handleInput() {
   }
 }
 
-void updatePos() { nav.updatePos(); }
-
-void check_all_GP2() {
-  if (detected_all(gp2_list, 1)) {
-    frein();
-    printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TRIGGERED!!!!!!!!!!!!!!!");
-  }
-}
-
 void test_rotation() {
   nav.pid_a.setCommande(-PI_OVER_TWO);
 
@@ -328,6 +319,28 @@ void test_rotation() {
 
     direction_l = d_l;
     direction_r = d_r;
+  }
+}
+
+void updatePos() { nav.updatePos(); }
+
+/* Return whether the position (x, y) is on the table */
+void pos_is_on_table(float x, float y) {
+  return (x < HEIGHT_TABLE - X_INIT) && (x > 0 - X_INIT) &&
+         (y < WIDTH_TABLE - Y_INIT) && (y > 0 - Y_INIT);
+}
+
+void check_all_GP2() {
+  if (num = detected_all(gp2_list, 1)) {
+    switch (num) {
+    case 1: // Front GP2
+      float front_x = ;
+      float front_y = ;
+      if (pos_is_on_table(x, y)) {
+        frein() if (debug) printf("\nStopped because object on the table\n");
+      };
+      break;
+    }
   }
 }
 
