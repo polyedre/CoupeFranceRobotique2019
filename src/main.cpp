@@ -324,8 +324,16 @@ void test_rotation() {
 
 void updatePos() { nav.updatePos(); }
 
+/* Return whether the position might be a wall */
+int pos_is_a_wall(float x, float y) {
+  return (abs(x - (0 - X_INIT)) < WALL_DETECTION_GAP) ||
+         (abs(x - (HEIGHT_TABLE - X_INIT)) < WALL_DETECTION_GAP) ||
+         (abs(x - (0 - Y_INIT)) < WALL_DETECTION_GAP) ||
+         (abs(x - (WIDTH_TABLE - X_INIT)) < WALL_DETECTION_GAP);
+}
+
 /* Return whether the position (x, y) is on the table */
-void pos_is_on_table(float x, float y) {
+int pos_is_on_table(float x, float y) {
   return (x < HEIGHT_TABLE - X_INIT) && (x > 0 - X_INIT) &&
          (y < WIDTH_TABLE - Y_INIT) && (y > 0 - Y_INIT);
 }

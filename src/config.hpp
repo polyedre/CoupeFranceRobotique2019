@@ -18,4 +18,15 @@
 
 #define CONSIGNE_MAX 0.4f
 
+/* ===  WALL DETECTION  === */
+
+// TODO : Check table values
+#define HEIGHT_TABLE 2.0f
+#define WIDTH_TABLE 2.0f
+#define X_INIT 0.25f
+#define Y_INIT 1.0f
+
+// Error accepted to validate that this is a wall
+#define WALL_DETECTION_GAP 0.10f
+
 #endif // __CONFIG_H_
