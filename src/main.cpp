@@ -339,7 +339,8 @@ int pos_is_on_table(float x, float y) {
 }
 
 void check_all_GP2() {
-  if (num = detected_all(gp2_list, 1)) {
+  if (int num = detected_all(gp2_list, 1)) {
+    float theta = pos.get_theta();
     float obj_x;
     float obj_y;
     switch (num) {
@@ -352,16 +353,16 @@ void check_all_GP2() {
           printf("\nStopped because object on the table\n");
       };
       break;
+    case 2: // Back GP2
+      obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
+      obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
+      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+        if (debug)
+          printf("\nObject behind on the table\n");
+      };
+      break;
     }
-  case 2: // Back GP2
-    obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
-    obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
-    if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-      if (debug)
-        printf("\nObject behind on the table\n");
-    };
-    break;
-  } else:
+  }
 }
 
 void frein() {

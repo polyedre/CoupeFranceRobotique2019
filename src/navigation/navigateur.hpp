@@ -33,8 +33,8 @@ public:
   PIDAngle pid_a;
 
 private:
-  float cible_x = 0;
-  float cible_y = 0;
+  float cible_x;
+  float cible_y;
   float angle_reel;
   PwmOut *m_l;
   PwmOut *m_r;

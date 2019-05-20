@@ -27,6 +27,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   pid_a = _pid_a;
   pid_v_l = _pid_v_l;
   pid_v_r = _pid_v_r;
+  cible_x = 0;
+  cible_y = 0;
 
   m_l = _m_l;
   m_r = _m_r;

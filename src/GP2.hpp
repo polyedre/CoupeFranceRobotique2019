@@ -12,9 +12,13 @@ public:
   float get_Distance();
   void debug();
   float real_distance;
+  int is_active();
+  void activate();
+  void deactivate();
 
 private:
   AnalogIn *input;
+  int activated;
   float distance_seuil;
 };
 
