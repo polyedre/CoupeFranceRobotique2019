@@ -25,6 +25,7 @@ public:
   void rotate_by(float angle);
   void avancer(float distance);
   void reset();
+  void reset_pids();
   void updatePos();
   void go_to(float cx, float cy);
   PIDVitesse pid_v_l;

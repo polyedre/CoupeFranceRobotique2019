@@ -13,15 +13,15 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
                        Encoder *encod_r) {
   position = _position;
 
-  float p_vitesse = 10;
+  float p_vitesse = 15;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.8, 0.001, 0.000, 0.035, 1,
-                     position); // 0.5cm de précision
-  PIDAngle _pid_a(0.4, 0.00005, 0.000, 0.005, 0, position);
+  PIDDistance _pid_d(0.8, 0.005, 0.0, 0.02, 1,
+                     position);                        // 0.5cm de précision
+  PIDAngle _pid_a(0.7, 0.001, 0.0, 0.02, 0, position); // 1 degré
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.0001, 0, 0.001, 0, encod_l, 0.007);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.0001, 0, 0.001, 0, encod_r, 0.007);
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.017, 0, 0.001, 0, encod_l, 0.004);
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.017, 0, 0.001, 0, encod_r, 0.004);
 
   pid_d = _pid_d;
   pid_a = _pid_a;
@@ -47,9 +47,13 @@ void Navigateur::set_destination(float x, float y) {
 
 void Navigateur::reset() {
   position->reset();
+  set_destination(0, 0);
+  reset_pids();
+}
+
+void Navigateur::reset_pids() {
   pid_a.reset();
   pid_d.reset();
-  set_destination(0, 0);
 }
 
 void Navigateur::update() {
@@ -71,14 +75,9 @@ void Navigateur::update() {
 
   int triggered = 0; // False
 
-  // printf("x = %f, y = %f, theta=%f\n", x, y, theta);
-  // printf("%f, %f, %f\r\n", x, y, theta);
-  // printf("Accumulateurs : (Dist : %f) (Angle : %f)\r\n", pid_d.accumulateur,
-  // pid_a.accumulateur);
-
   float distance_cible = sqrt(carre(x - cible_x) + carre(y - cible_y));
 
-  if (distance_cible > 0.1) {
+  if (distance_cible > 0.02) {
     angle_absolu_destination =
         modulo_angle_absolu(calculerAngle(x, y, cible_x, cible_y));
   } else {
@@ -116,19 +115,19 @@ void Navigateur::update() {
     le même sens. On inverse ensuite selon la consigne lors de l'appel
     à `limiter_consigne`.
     */
-  if (i > 0) {
-    dir_r = 1;
-    dir_l = 0;
+  // if (i > 0) {
+  //   dir_r = 1;
+  //   dir_l = 0;
 
-    cmr = dist_cons + angle_cons; // Consigne moteur droit
-    cml = dist_cons - angle_cons; // Consigne moteur gauche
-  } else {
-    dir_r = 0;
-    dir_l = 1;
+  //   cmr = dist_cons + angle_cons; // Consigne moteur droit
+  //   cml = dist_cons - angle_cons; // Consigne moteur gauche
+  // } else {
+  dir_r = 0;
+  dir_l = 1;
 
-    cmr = dist_cons - angle_cons; // Consigne moteur droit
-    cml = dist_cons + angle_cons; // Consigne moteur gauche
-  }
+  cmr = dist_cons - angle_cons; // Consigne moteur droit
+  cml = dist_cons + angle_cons; // Consigne moteur gauche
+  // }
 
   pid_v_r.setCommande(cmr);
   float cmr_v = pid_v_r.getConsigne();
@@ -140,8 +139,8 @@ void Navigateur::update() {
     print_pos();
     printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f A:%.2f D:%.2f R:%.2f F:%s "
            "I:%s T:%s ",
-           cible_x, cible_y, convert_degree(angle_absolu_destination), cmr, cml,
-           angle_cons, dist_cons, convert_degree(angle_relatif),
+           cible_x, cible_y, convert_degree(angle_absolu_destination), cmr_v,
+           cml_v, angle_cons, dist_cons, convert_degree(angle_relatif),
            pid_d.actionFinished ? "T" : "F", i < 0 ? "Y" : "N",
            triggered == 1 ? "Y" : "N");
   }
@@ -170,18 +169,17 @@ void Navigateur::rotate_by(float angle) {
 
   pid_a.setCommande(angle_dest);
 
-  while (!pid_a.actionFinished) {
+  int continuer = 0;
+  while (continuer < 10) {
 
     if (running) {
       float consigne = pid_a.getConsigne();
 
-      consigne = min(consigne, 0.4f);
+      float cmr = -consigne;
+      float cml = consigne;
 
-      float cmr = consigne;
-      float cml = -consigne;
-
-      int dir_l = 0;
-      int dir_r = 1;
+      int dir_l = 1;
+      int dir_r = 0;
 
       pid_v_r.setCommande(cmr);
       float cmr_v = pid_v_r.getConsigne();
@@ -207,6 +205,9 @@ void Navigateur::rotate_by(float angle) {
       *d_r = dir_r;
       *d_l = dir_l;
     }
+
+    if (pid_a.actionFinished)
+      continuer++;
   }
   pid_d.reset();
   pid_a.reset();
@@ -231,8 +232,6 @@ void Navigateur::avancer(float distance) {
   while (!pid_d.actionFinished) {
     if (running) {
       update();
-    } else {
-      wait(0.5);
     }
   }
 
@@ -252,8 +251,6 @@ void Navigateur::go_to(float cx, float cy) {
   while (!pid_d.actionFinished) {
     if (running) {
       update();
-    } else {
-      wait(0.5);
     }
   }
 

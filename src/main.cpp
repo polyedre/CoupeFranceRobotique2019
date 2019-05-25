@@ -70,7 +70,7 @@ void setup() {
   printf("\r\nInitialisation du programme.\r\n");
 
   usb.attach(&handleInput);
-  updatePos_t.attach(&updatePos, 0.0001f);
+  updatePos_t.attach(&updatePos, 0.001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
 
   alim_gp2_1 = 1;
@@ -87,45 +87,25 @@ void setup() {
 
 void loop() {
 
-  // ====== GOTO ======
+  // ===== MAIN CODE =====
 
-  nav.go_to(0.5, 0.0);
-  nav.go_to(0.5, 0.5);
-  nav.go_to(1.0, 0.5);
-  nav.go_to(1.0, 0.0);
-  printf("\nLast run\n");
-  nav.go_to(0.0, 0.0);
+  nav.go_to(0.1f, 0.0f);
+  nav.rotate_by(PI_OVER_TWO);
+  nav.go_to(0.1f, 0.3f);
+  nav.rotate_by(-PI_OVER_TWO);
+  nav.go_to(0.5f, 0.3f);
+  nav.rotate_by(-3 * PI / 4 + 0.05);
+  nav.go_to(0.2f, -0.4f);
 
-  //  // ======  Homologation  ======
+  // ===== TESTS =====
 
-  // printf("\nAvancer\n");
-  // nav.avancer(0.4);
-
-  // printf("\nPI/2\n");
+  // nav.go_to(1, 0);
+  // wait(0.5);
   // nav.rotate_by(PI_OVER_TWO);
+  // wait(0.5);
+  // nav.rotate_by(-PI);
 
-  // printf("\nAvancer\n");
-  // nav.avancer(0.4);
-
-  // printf("\nPI/2\n");
-  // nav.rotate_by(-PI_OVER_TWO);
-
-  // printf("\nAvancer\n");
-  // nav.avancer(0.4);
-
-  // printf("\nPI/2\n");
-  // nav.rotate_by(-PI_OVER_TWO);
-
-  // printf("\nAvancer\n");
-  // nav.avancer(0.4);
-
-  // printf("\nPI/2\n");
-  // nav.rotate_by(-PI_OVER_TWO);
-
-  // printf("\nAvancer\n");
-  // nav.avancer(0.7);
-
-  //   ==========  CARRÉ  ==============
+  // ==========  CARRÉ  ==============
   //   while (1) {
   //   if (running){
 
@@ -153,9 +133,9 @@ void test_motors() {
   printf("Avancer\n");
   // Avancer tout droit
   motor_l.write(0.1f);
-  direction_l = 0;
+  direction_l = 1;
   motor_r.write(0.1f);
-  direction_r = 1;
+  direction_r = 0;
 
   wait(1);
 
@@ -167,9 +147,9 @@ void test_motors() {
 
   // Reculer tout droit
   // motor_l.write(0.2f);
-  direction_l = 1;
+  direction_l = 0;
   // motor_r.write(0.2f);
-  direction_r = 0;
+  direction_r = 1;
 
   wait(1);
 
@@ -289,6 +269,10 @@ void handleInput() {
   if (c == 't') { // Run Test
     test_motors();
   }
+
+  if (c == 'f') {
+    frein();
+  }
 }
 
 void test_rotation() {
@@ -366,11 +350,8 @@ void check_all_GP2() {
 }
 
 void frein() {
-  motor_l.write(0.001f);
-  motor_r.write(0.001f);
-  break_l = 1;
-  break_r = 1;
-  wait(0.5f);
-  break_l = 0;
-  break_r = 0;
+  motor_l.write(0.0f);
+  motor_r.write(0.0f);
+  wait(1);
+  nav.reset_pids();
 }
