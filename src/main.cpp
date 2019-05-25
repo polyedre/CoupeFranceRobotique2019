@@ -33,18 +33,18 @@ Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l,
                &enc_r);
 
 // // TODO : Donner des ports aux GP2
-AnalogIn gp2_analog_1(PC_0);
-// AnalogIn gp2_analog_2();
-// AnalogIn gp2_analog_3();
-// AnalogIn gp2_analog_4();
+AnalogIn gp2_analog_1(PC_0); // Devant
+AnalogIn gp2_analog_2(PC_3); // Derrière
+AnalogIn gp2_analog_3(PF_3); // Droite
+AnalogIn gp2_analog_4(PF_5); // Gauche
 
 DigitalOut alim_gp2_1(PC_3);
 
 GP2 gp2_list[1] = {
-    GP2(&gp2_analog_1, 0.5),
-    // GP2(gp2_analog_2, 0.3),
-    // GP2(gp2_analog_3, 0.3),
-    // GP2(gp2_analog_4, 0.3),
+    GP2(&gp2_analog_1, 0.5), // Devant
+    GP2(&gp2_analog_2, 0.3), // Derrière
+    GP2(&gp2_analog_3, 0.3), // Droite
+    GP2(&gp2_analog_4, 0.3), // Gauche
 };
 
 /* Prototypes */
@@ -343,6 +343,22 @@ void check_all_GP2() {
       if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
         if (debug)
           printf("\nObject behind on the table\n");
+      };
+      break;
+    case 3: // Right
+      obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta - (PI / 4));
+      obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta - (PI / 4));
+      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+        if (debug)
+          printf("\nObject right on the table\n");
+      };
+      break;
+    case 4: // Left
+      obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta + (PI / 4));
+      obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta + (PI / 4));
+      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+        if (debug)
+          printf("\nObject left on the table\n");
       };
       break;
     }
