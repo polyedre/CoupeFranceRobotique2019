@@ -30,6 +30,7 @@ DigitalIn sideBtn(PF_15);
 
 Ticker updatePos_t;
 Ticker checkGP2_t;
+Ticker interrupt_nav_update_t;
 
 Position pos(&enc_l, &enc_r);
 Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l,
@@ -58,6 +59,7 @@ void test_motors();
 void test_rotation();
 void check_all_GP2();
 void frein();
+void interrupt_nav_update(void);
 
 /* Global variables */
 
@@ -75,6 +77,7 @@ void setup() {
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
+  interrupt_nav_update_t.attach(&interrupt_nav_update,0.01f);
 
   starterBtn.mode(PullUp);
   sideBtn.mode(PullUp);
@@ -382,4 +385,8 @@ void frein() {
   motor_r.write(0.0f);
   wait(1);
   nav.reset_pids();
+}
+
+void interrupt_position(void){
+  nav.update();
 }
