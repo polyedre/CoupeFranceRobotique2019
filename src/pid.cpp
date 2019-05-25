@@ -6,8 +6,6 @@
 #include <math.h>
 #include <queue>
 
-// Durée de la rampe en seconde
-#define RAMPE_LENGHT 3.0f
 // ancienne rampe : 0.7f OK pour angle
 
 extern int debug_monitor;
@@ -17,7 +15,7 @@ extern int debug_monitor;
 PID::PID() {} // kewa?
 
 PID::PID(float _p, float _i, float _d, float _erreurSeuil,
-         float _accumulateurSeuil) {
+         float _accumulateurSeuil, float _erreur_limite_acc) {
 
   p = _p;
   i = _i;
@@ -25,6 +23,7 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil,
 
   accumulateur = 0;
   actionFinished = 0;
+  erreur_limite_acc = _erreur_limite_acc;
   derivee_data[0] = 0;
   derivee_data[1] = 0;
   derivee_data[2] = 0;
@@ -34,11 +33,21 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil,
   time.start();
 
   last_time = time.read();
+
+  consigne = 0;
 }
 
 float PID::calculerConsigne() {
   // printf("ACC:%f", accumulateur);
-  return (p * erreur + i * accumulateur + d * getDerivee()) * getRampe();
+  float new_consigne = p * erreur + i * accumulateur + d * getDerivee();
+  if (abs(consigne - new_consigne) < 0.01f) {
+    if (consigne > new_consigne)
+      new_consigne = consigne - 0.01f;
+    else
+      new_consigne = consigne + 0.01f;
+  }
+  consigne = new_consigne;
+  return consigne;
 }
 
 static void tab_shift(float *tab, int tab_size) {
@@ -70,20 +79,15 @@ float PID::getConsigne() {
     reset();
     actionFinished = 1;
   } else {
-    AccumulerErreur(erreur);
+    if (erreur < erreur_limite_acc) {
+      AccumulerErreur(erreur);
+    }
     actionFinished = 0;
   }
   return calculerConsigne();
 }
 
-float PID::getRampe() {
-  if (time.read() < RAMPE_LENGHT)
-    return time.read() / RAMPE_LENGHT;
-  return 1;
-}
-
 void PID::reset() {
-  accumulateur = 0;
   compteur_acc = 0;
   for (int i = 0; i < 1000; i++) {
     fifo.push(0);
@@ -97,8 +101,9 @@ void PID::reset() {
 PIDDistance::PIDDistance() {}
 
 PIDDistance::PIDDistance(float _p, float _i, float _d, float _erreurSeuil,
-                         float _accumulateurSeuil, Position *position)
-    : PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil) {
+                         float _accumulateurSeuil, Position *position,
+                         float erreur_limite_acc)
+    : PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, erreur_limite_acc) {
   pos = position;
 }
 
@@ -126,8 +131,9 @@ void PIDDistance::setCommande(float x, float y) {
 PIDAngle::PIDAngle() {}
 
 PIDAngle::PIDAngle(float _p, float _i, float _d, float _erreurSeuil,
-                   float _accumulateurSeuil, Position *position)
-    : PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil) {
+                   float _accumulateurSeuil, Position *position,
+                   float erreur_limite_acc)
+    : PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, erreur_limite_acc) {
   pos = position;
 }
 
@@ -163,21 +169,19 @@ float calculerAngle(float x1, float y1, float x2, float y2) {
 PIDVitesse::PIDVitesse() {}
 
 PIDVitesse::PIDVitesse(float _p, float _i, float _d, float _erreurSeuil,
-                       float _accumulateurSeuil, Encoder *encoder, float _coef)
-    : PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil) {
+                       float _accumulateurSeuil, Encoder *encoder, float _coef,
+                       float erreur_limite_acc)
+    : PID(_p, _i, _d, _erreurSeuil, _accumulateurSeuil, erreur_limite_acc) {
   encod = encoder;
   coef = _coef;
-  vitesse = 0;
 }
 
-void PIDVitesse::updateVitesse(short v) {
-  vitesse = coef * (float)v;
-  // printf("%d, %f\n", v, vitesse);
-}
+void PIDVitesse::updateVitesse(short v) { vitesse = coef * (float)v; }
 
 float PIDVitesse::calculerErreur() {
   float err = (commande_vitesse - vitesse);
 
+  printf("vitesse:%f", this->vitesse);
   if (debug_monitor)
     printf("EV:(%.2f,%.2f)", err, vitesse);
   return err;
