@@ -387,6 +387,6 @@ void frein() {
   nav.reset_pids();
 }
 
-void interrupt_position(void){
+void interrupt_nav_update(void){
   nav.update();
 }
