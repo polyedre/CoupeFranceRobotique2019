@@ -76,17 +76,8 @@ void setup() {
   updatePos_t.attach(&updatePos, 0.001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
 
-<<<<<<< HEAD
-  // detected_all(gp2_list, 1);
-
-  // for (int i = 0; i < 3; i++) {
-  //   printf("%d...\n", i);
-  //   wait(1);
-  // }
-=======
   starterBtn.mode(PullUp);
   sideBtn.mode(PullUp);
->>>>>>> btns
 
   if (sideBtn.read()) {
     side = BLUE_LEFT;
@@ -359,7 +350,6 @@ void check_all_GP2() {
     case 2: // Back GP2
       obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
       obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
-      frein();
       if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
         if (debug_monitor)
           printf("\nObject behind on the table\n");
