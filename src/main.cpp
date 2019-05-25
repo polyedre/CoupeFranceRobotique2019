@@ -26,7 +26,7 @@ DigitalOut direction_l(PE_11);
 DigitalOut break_l(PF_14);
 
 DigitalIn starterBtn(PE_4);
-DigitalIn sideBtn(PE_5);
+DigitalIn sideBtn(PF_15);
 
 Ticker updatePos_t;
 Ticker checkGP2_t;
@@ -50,7 +50,7 @@ GP2 gp2_list[1] = {
     // GP2(gp2_analog_4, 0.3),
 };
 
-enum Side = {BLUE_LEFT, BLUE_RIGHT};
+enum Side { BLUE_LEFT, BLUE_RIGHT };
 
 /* Prototypes */
 
@@ -72,18 +72,21 @@ void setup() {
 
   // Communication série
   usb.baud(115200);
-  printf("\r\nInitialisation du programme.\r\n");
+  printf("\n\nInitialisation du programme.\n");
 
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
 
-  alim_gp2_1 = 1;
+  starterBtn.mode(PullUp);
+  sideBtn.mode(PullUp);
 
   if (sideBtn.read()) {
     side = BLUE_LEFT;
+    printf("Coté détecté : Bleu à gauche.\n");
   } else {
     side = BLUE_RIGHT;
+    printf("Coté détecté : Bleu à droite.\n");
   }
   nav.set_destination(0, 0);
 
@@ -94,7 +97,7 @@ void loop() {
 
   // ===== MAIN CODE =====
 
-  printf("\nAttente du démarrage...\n");
+  printf("Attente du démarrage...\n");
 
   while (!starterBtn.read()) {
   }
@@ -110,7 +113,7 @@ void loop() {
     nav.rotate_by(-3 * PI / 4 + 0.05);
     nav.go_to(0.2f, -0.4f);
   } else {
-    printf("\nCe coté n'a pas été implémenté\n");
+    printf("Ce coté n'a pas été implémenté\n");
   }
   // ===== TESTS =====
 
@@ -342,7 +345,7 @@ void check_all_GP2() {
       obj_y = pos.get_y() + gp2_list[num].real_distance * sin(theta);
       if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
         frein();
-        if (debug)
+        if (debug_monitor)
           printf("\nStopped because object on the table\n");
       };
       break;
@@ -350,7 +353,7 @@ void check_all_GP2() {
       obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
       obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
       if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-        if (debug)
+        if (debug_monitor)
           printf("\nObject behind on the table\n");
       };
       break;
