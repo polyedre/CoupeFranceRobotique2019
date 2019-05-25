@@ -170,51 +170,6 @@ void Navigateur::rotate_by(float angle) {
   float angle_dest = modulo_angle_absolu(theta + angle);
 
   pid_a.setCommande(angle_dest);
-
-  int continuer = 0;
-  while (continuer < 10) {
-
-    if (running) {
-      float consigne = pid_a.getConsigne();
-
-      float cmr = -consigne;
-      float cml = consigne;
-
-      int dir_l = 1;
-      int dir_r = 0;
-
-      pid_v_r.setCommande(cmr);
-      float cmr_v = pid_v_r.getConsigne();
-
-      pid_v_l.setCommande(cml);
-      float cml_v = pid_v_l.getConsigne();
-
-      if (debug_monitor) {
-        print_pos();
-        printf("cx:%.2f cy:%.2f t:%.2f r:%.2f l:%.2f CA:%.2f rv:%.2f lv:%.2f",
-               cible_x, cible_y, convert_degree(angle_dest), cmr, cml, consigne,
-               cmr_v, cml_v);
-      }
-
-      limiter_consigne(&cmr_v, &dir_r);
-      limiter_consigne(&cml_v, &dir_l);
-
-      if (move) {
-        m_l->write(cml_v);
-        m_r->write(cmr_v);
-      }
-
-      *d_r = dir_r;
-      *d_l = dir_l;
-    }
-
-    if (pid_a.actionFinished)
-      continuer++;
-  }
-  pid_d.reset();
-  pid_a.reset();
-  m_l->write(0);
-  m_r->write(0);
 }
 
 /*
@@ -230,41 +185,12 @@ void Navigateur::avancer(float distance) {
   float new_y = y + distance * sin(theta);
 
   set_destination(new_x, new_y);
-
-  int continuer = 0;
-  while (continuer < 10) {
-    if (pid_d.actionFinished)
-      continuer++;
-
-    if (running) {
-      update();
-    }
-  }
-
-  pid_d.reset();
-  pid_a.reset();
-  m_l->write(0);
-  m_r->write(0);
 }
 
 /*
  * Va à la position `x`, `y` mètres.
  */
-void Navigateur::go_to(float cx, float cy) {
-
-  set_destination(cx, cy);
-
-  while (!pid_d.actionFinished) {
-    if (running) {
-      update();
-    }
-  }
-
-  pid_d.reset();
-  pid_a.reset();
-  m_l->write(0);
-  m_r->write(0);
-}
+void Navigateur::go_to(float cx, float cy) { set_destination(cx, cy); }
 
 void Navigateur::print_pos() {
   printf("\n\rx:%.2f y:%.2f t:%.2f ", position->get_x(), position->get_y(),
