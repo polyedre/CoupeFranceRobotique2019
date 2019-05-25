@@ -17,13 +17,16 @@ Serial usb(USBTX, USBRX);
 Encoder enc_l(TIM3); // PD12 - PD13
 Encoder enc_r(TIM4); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
 
-PwmOut motor_l(PB_13); // TODO changer les noms des pins
+PwmOut motor_l(PB_13);
 PwmOut motor_r(PB_15);
 
 DigitalOut direction_r(PF_13);
 DigitalOut break_r(PE_9);
 DigitalOut direction_l(PE_11);
 DigitalOut break_l(PF_14);
+
+DigitalIn starterBtn(PE_4);
+DigitalIn sideBtn(PF_15);
 
 Ticker updatePos_t;
 Ticker checkGP2_t;
@@ -45,6 +48,8 @@ GP2 gp2_list[4] = {
     GP2(&gp2_analog_4, 0.3), // Gauche
 };
 
+enum Side { BLUE_LEFT, BLUE_RIGHT };
+
 /* Prototypes */
 
 void handleInput();
@@ -59,40 +64,64 @@ void frein();
 int debug_monitor = 1;
 int running = 1;
 int move = 1;
+enum Side side;
 
 void setup() {
 
   // Communication série
-  // bt.baud(9600);
   usb.baud(115200);
-  printf("\r\nInitialisation du programme.\r\n");
+  printf("\n\nInitialisation du programme.\n");
 
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
   checkGP2_t.attach(&check_all_GP2, 0.1f);
 
+<<<<<<< HEAD
   // detected_all(gp2_list, 1);
 
   // for (int i = 0; i < 3; i++) {
   //   printf("%d...\n", i);
   //   wait(1);
   // }
+=======
+  starterBtn.mode(PullUp);
+  sideBtn.mode(PullUp);
+>>>>>>> btns
 
+  if (sideBtn.read()) {
+    side = BLUE_LEFT;
+    printf("Coté détecté : Bleu à gauche.\n");
+  } else {
+    side = BLUE_RIGHT;
+    printf("Coté détecté : Bleu à droite.\n");
+  }
   nav.set_destination(0, 0);
+
+  printf("Je suis prêt\n");
 }
 
 void loop() {
 
   // ===== MAIN CODE =====
 
-  nav.go_to(0.1f, 0.0f);
-  nav.rotate_by(PI_OVER_TWO);
-  nav.go_to(0.1f, 0.3f);
-  nav.rotate_by(-PI_OVER_TWO);
-  nav.go_to(0.5f, 0.3f);
-  nav.rotate_by(-3 * PI / 4 + 0.05);
-  nav.go_to(0.2f, -0.4f);
+  printf("Attente du démarrage...\n");
 
+  while (!starterBtn.read()) {
+  }
+
+  printf("C'est parti !\n");
+
+  if (side == BLUE_LEFT) { // Bleu à gauche
+    nav.go_to(0.1f, 0.0f);
+    nav.rotate_by(PI_OVER_TWO);
+    nav.go_to(0.1f, 0.3f);
+    nav.rotate_by(-PI_OVER_TWO);
+    nav.go_to(0.5f, 0.3f);
+    nav.rotate_by(-3 * PI / 4 + 0.05);
+    nav.go_to(0.2f, -0.4f);
+  } else {
+    printf("Ce coté n'a pas été implémenté\n");
+  }
   // ===== TESTS =====
 
   // nav.go_to(1, 0);
@@ -113,14 +142,8 @@ void loop() {
 }
 
 int main() {
-  printf("Setup\n");
   setup();
-  printf("loop\n");
-  // nav.avancer(0.5);
-  // nav.rotate_by(PI_OVER_TWO);
   loop();
-  // test_motors();
-  // test_rotation();
   return 0;
 }
 
