@@ -13,15 +13,17 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
                        Encoder *encod_r) {
   position = _position;
 
-  float p_vitesse = 15;
+  float p_vitesse = 6;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.8, 0.005, 0.0, 0.02, 1,
-                     position);                        // 0.5cm de précision
-  PIDAngle _pid_a(0.7, 0.001, 0.0, 0.02, 0, position); // 1 degré
+  PIDDistance _pid_d(0.8, 0.0, 0.0, 0.02, 1, position,
+                     0.4f); // 0.5cm de précision
+  PIDAngle _pid_a(0.5, 0.0, 0.01, 0.02, 0, position, 0.1f); // 1 degré
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.017, 0, 0.001, 0, encod_l, 0.004);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.017, 0, 0.001, 0, encod_r, 0.004);
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.01, 0, 0.001, 0, encod_l, 0.004,
+                      1.0f);
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.01, 0, 0.001, 0, encod_r, 0.004,
+                      1.0f);
 
   pid_d = _pid_d;
   pid_a = _pid_a;
@@ -77,7 +79,7 @@ void Navigateur::update() {
 
   float distance_cible = sqrt(carre(x - cible_x) + carre(y - cible_y));
 
-  if (distance_cible > 0.02) {
+  if (distance_cible > 0.01) {
     angle_absolu_destination =
         modulo_angle_absolu(calculerAngle(x, y, cible_x, cible_y));
   } else {
@@ -104,11 +106,11 @@ void Navigateur::update() {
   }
   angle_cons = pid_a.getConsigne();
 
-  dist_cons = min(dist_cons, 0.07);
-  angle_cons = min(angle_cons, 0.1);
+  dist_cons = min(dist_cons, 0.2);
+  angle_cons = min(angle_cons, 0.2);
 
-  dist_cons = max(dist_cons, -0.07f);
-  angle_cons = max(angle_cons, -0.1f);
+  dist_cons = max(dist_cons, -0.2f);
+  angle_cons = max(angle_cons, -0.2f);
 
   /*
     Initialisation des directions pour que les moteurs tournent dans
@@ -229,7 +231,11 @@ void Navigateur::avancer(float distance) {
 
   set_destination(new_x, new_y);
 
-  while (!pid_d.actionFinished) {
+  int continuer = 0;
+  while (continuer < 10) {
+    if (pid_d.actionFinished)
+      continuer++;
+
     if (running) {
       update();
     }

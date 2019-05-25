@@ -102,17 +102,20 @@ void loop() {
 
   printf("C'est parti !\n");
 
-  if (side == BLUE_LEFT) { // Bleu à gauche
-    nav.go_to(0.1f, 0.0f);
-    nav.rotate_by(PI_OVER_TWO);
-    nav.go_to(0.1f, 0.3f);
-    nav.rotate_by(-PI_OVER_TWO);
-    nav.go_to(0.5f, 0.3f);
-    nav.rotate_by(-3 * PI / 4 + 0.05);
-    nav.go_to(0.2f, -0.4f);
-  } else {
-    printf("Ce coté n'a pas été implémenté\n");
-  }
+  // nav.avancer(1.0f);
+
+  // if (side == BLUE_LEFT) { // Bleu à gauche
+  //   nav.go_to(0.07, 0.0f);
+  //   nav.rotate_by(PI_OVER_TWO);
+  //   nav.go_to(0.1f, 0.3f);
+  //   nav.rotate_by(-PI_OVER_TWO);
+  //   nav.go_to(0.5f, 0.3f);
+  //   nav.rotate_by(-3 * PI / 4 + 0.05);
+  //   nav.go_to(0.2f, -0.4f);
+  // } else {
+  //   printf("Ce coté n'a pas été implémenté\n");
+  // }
+
   // ===== TESTS =====
 
   // nav.go_to(1, 0);
@@ -122,14 +125,46 @@ void loop() {
   // nav.rotate_by(-PI);
 
   // ==========  CARRÉ  ==============
-  //   while (1) {
-  //   if (running){
 
-  //     nav.avancer(0.3);
-  //     nav.rotate_by(PI_OVER_TWO);
+  while (1) {
+    if (running) {
 
-  //   }
+      nav.avancer(0.3);
+      nav.rotate_by(PI_OVER_TWO);
+    }
+  }
+
+  //
+  // ======== PID VITESSE ==========
+  //
+  //  direction_l = 1;
+  // direction_r = 0;
+
+  // nav.pid_v_l.reset();
+  // nav.pid_v_r.reset();
+  // nav.pid_v_l.setCommande(0.1f);
+  // nav.pid_v_r.setCommande(0.1f);
+
+  // printf("DEBUT\n");
+
+  // int counter = 0;
+  // while (counter < 1000 && running) {
+  //   float cml = nav.pid_v_l.getConsigne();
+  //   float cmr = nav.pid_v_r.getConsigne();
+
+  //   printf("vl:%f\n", nav.pid_v_l.vitesse);
+
+  //   counter++;
+  //   printf("%f %f\n", cmr, cml);
+
+  //   motor_l.write(cml);
+  //   motor_r.write(cmr);
   // }
+
+  // printf("FIN_TEST\n");
+
+  // motor_l.write(0.0f);
+  // motor_r.write(0.0f);
 }
 
 int main() {
@@ -140,31 +175,31 @@ int main() {
 
 void test_motors() {
 
-  printf("Avancer\n");
-  // Avancer tout droit
-  motor_l.write(0.1f);
-  direction_l = 1;
-  motor_r.write(0.1f);
-  direction_r = 0;
+  // printf("Avancer\n");
+  // // Avancer tout droit
+  // motor_l.write(0.1f);
+  // direction_l = 1;
+  // motor_r.write(0.1f);
+  // direction_r = 0;
 
-  wait(1);
+  // wait(1);
+
+  // // motor_l.write(0.0f);
+  // // motor_r.write(0.0f);
+
+  // printf("Reculer\n");
+  // // wait(2);
+
+  // // Reculer tout droit
+  // // motor_l.write(0.2f);
+  // direction_l = 0;
+  // // motor_r.write(0.2f);
+  // direction_r = 1;
+
+  // wait(1);
 
   // motor_l.write(0.0f);
   // motor_r.write(0.0f);
-
-  printf("Reculer\n");
-  // wait(2);
-
-  // Reculer tout droit
-  // motor_l.write(0.2f);
-  direction_l = 0;
-  // motor_r.write(0.2f);
-  direction_r = 1;
-
-  wait(1);
-
-  motor_l.write(0.0f);
-  motor_r.write(0.0f);
 
   // wait(1);
 
@@ -186,31 +221,34 @@ void test_motors() {
   // motor_r.write(0.0f);
 
   // // tourner
-  // direction_l = 0;
-  // direction_r = 1;
+  direction_l = 1;
+  direction_r = 0;
 
-  // nav.pid_v_l.reset();
-  // nav.pid_v_r.reset();
-  // nav.pid_v_l.setCommande(0.2f);
-  // nav.pid_v_r.setCommande(0.2f);
+  nav.pid_v_l.reset();
+  nav.pid_v_r.reset();
+  nav.pid_v_l.setCommande(0.1f);
+  nav.pid_v_r.setCommande(0.1f);
 
-  // printf("DEBUT\n");
+  printf("DEBUT\n");
 
-  // while (running) {
-  //   float cml = nav.pid_v_l.getConsigne();
-  //   float cmr = nav.pid_v_r.getConsigne();
+  int counter = 0;
+  while (counter < 100) {
+    float cml = nav.pid_v_l.getConsigne();
+    float cmr = nav.pid_v_r.getConsigne();
 
-  //   printf("%f %f\n", cmr, cml);
+    printf("vl:%f\n", nav.pid_v_l.vitesse);
 
-  //   motor_l.write(cml);
-  //   motor_r.write(cmr);
+    counter++;
+    printf("%f %f\n", cmr, cml);
 
-  // }
+    motor_l.write(cml);
+    motor_r.write(cmr);
+  }
 
-  // printf("FIN_TEST\n");
+  printf("FIN_TEST\n");
 
-  // motor_l.write(0.0f);
-  // motor_r.write(0.0f);
+  motor_l.write(0.0f);
+  motor_r.write(0.0f);
 }
 
 void handleInput() {
@@ -358,14 +396,14 @@ void check_all_GP2() {
     case 3: // Right
       obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta - (PI / 4));
       obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta - (PI / 4));
-      frein();
+      // frein();
       if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
         if (debug_monitor)
           printf("\nObject right on the table\n");
       };
       break;
     case 4: // Left
-      frein();
+      // frein();
       obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta + (PI / 4));
       obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta + (PI / 4));
       if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
