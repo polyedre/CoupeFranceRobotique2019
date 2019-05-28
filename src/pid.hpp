@@ -10,13 +10,14 @@ class PID { // PID asservissement en position
 public:
   PID();
   PID(float p, float i, float d, float erreurSeuil, float accumulateurSeuil,
-      float erreur_limite_acc);
+      float erreur_limite_acc, float deltaRampe);
   void AccumulerErreur(float erreur);
   float calculerConsigne();
   float getConsigne();
   virtual float calculerErreur() = 0; // A override dans les classes filles
   void stockerErreur();
   float getDerivee();
+  float deltaRampe;
 
   void reset();
 
@@ -51,7 +52,7 @@ public:
   PIDDistance();
   PIDDistance(float p, float i, float d, float erreurSeuil,
               float accumulateurSeuil, Position *position,
-              float erreur_limite_acc);
+              float erreur_limite_acc, float deltaRampe);
 
   float calculerErreur();
   void setCommande(float x, float y);
@@ -65,8 +66,8 @@ class PIDAngle : public PID {
 public:
   PIDAngle();
   PIDAngle(float p, float i, float d, float erreurSeuil,
-           float accumulateurSeuil, Position *position,
-           float erreur_limite_acc);
+           float accumulateurSeuil, Position *position, float erreur_limite_acc,
+           float deltaRampe);
 
   float calculerErreur();
   void setCommande(float theta);
@@ -80,7 +81,7 @@ public:
   PIDVitesse();
   PIDVitesse(float p, float i, float d, float erreurSeuil,
              float accumulateurSeuil, Encoder *encoder, float coef,
-             float erreur_limite_acc);
+             float erreur_limite_acc, float deltaRampe);
 
   float calculerErreur();
   void updateVitesse(short v);

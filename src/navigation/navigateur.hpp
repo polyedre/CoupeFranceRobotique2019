@@ -5,6 +5,9 @@
 
 #define NAV_PRECISION 0.01f // Précision de la position en mètres
 #define PWM_PERIOD 0.000033F
+
+enum Sens { AVANT, ARRIERE };
+
 /**
  * Classe pour le navigateur.
  * Celui-ci est capable de piloter le robot par mouvement élémentaire pour le
@@ -21,6 +24,7 @@ public:
   void set_destination(float x, float y);
   void update();
   void print_pos();
+  void debug();
   Position *position;
   void rotate_by(float angle);
   void avancer(float distance);
@@ -28,6 +32,7 @@ public:
   void reset_pids();
   void updatePos();
   void go_to(float cx, float cy);
+  void rotate_to(float angle_dest);
   PIDVitesse pid_v_l;
   PIDVitesse pid_v_r;
   PIDDistance pid_d;
@@ -41,4 +46,19 @@ private:
   PwmOut *m_r;
   DigitalOut *d_l;
   DigitalOut *d_r;
+  int dir_l;
+  int dir_r;
+  int updateAngleCons;
+  float angle_cons;
+  float dist_cons;
+  float angle_absolu_destination;
+  float angle_relatif;
+  int triggered;
+  float cmr;
+  float cml;
+  int actionFinished;
+  int compteur;
+  enum Sens sens;
+  float consigne_motor_l;
+  float consigne_motor_r;
 };

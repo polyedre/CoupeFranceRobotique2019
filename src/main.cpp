@@ -76,8 +76,8 @@ void setup() {
 
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
-  checkGP2_t.attach(&check_all_GP2, 0.1f);
-  interrupt_nav_update_t.attach(&interrupt_nav_update,0.01f);
+  // checkGP2_t.attach(&check_all_GP2, 0.1f);
+  interrupt_nav_update_t.attach(&interrupt_nav_update, 0.01f);
 
   starterBtn.mode(PullUp);
   sideBtn.mode(PullUp);
@@ -105,20 +105,51 @@ void loop() {
 
   printf("C'est parti !\n");
 
-  // nav.avancer(1.0f);
+  if (side == BLUE_LEFT) { // Bleu à gauche
+    printf("Action 1\n");
+    nav.go_to(0.1f, 0.0f);
+    frein();
+    printf("Action 2\n");
+    nav.rotate_by(PI_OVER_TWO);
+    frein();
+    printf("Action 2\n");
+    nav.go_to(0.1f, 0.3f);
+    frein();
+    nav.rotate_by(-PI_OVER_TWO);
+    frein();
+    nav.go_to(0.5f, 0.3f);
+    frein();
+    nav.rotate_by(-3 * PI / 4 + 0.05);
+    frein();
+    nav.go_to(0.2f, -0.4f);
+    frein();
+    nav.rotate_to(-PI_OVER_TWO);
+    frein();
+  } else {
+    printf("Action 1\n");
+    nav.go_to(0.1f, 0.0f);
+    frein();
+    printf("Action 2\n");
+    nav.rotate_by(-PI_OVER_TWO);
+    frein();
+    printf("Action 2\n");
+    nav.go_to(0.1f, -0.3f);
+    frein();
+    nav.rotate_by(-PI_OVER_TWO);
+    frein();
+    nav.go_to(0.5f, -0.3f);
+    frein();
+    nav.rotate_by(-3 * PI / 4 + 0.05);
+    frein();
+    nav.go_to(0.2f, -0.4f);
+    frein();
+    nav.rotate_to(-PI_OVER_TWO);
+    frein();
+  }
 
-  // if (side == BLUE_LEFT) { // Bleu à gauche
-  //   nav.go_to(0.07, 0.0f);
-  //   nav.rotate_by(PI_OVER_TWO);
-  //   nav.go_to(0.1f, 0.3f);
-  //   nav.rotate_by(-PI_OVER_TWO);
-  //   nav.go_to(0.5f, 0.3f);
-  //   nav.rotate_by(-3 * PI / 4 + 0.05);
-  //   nav.go_to(0.2f, -0.4f);
-  // } else {
-  //   printf("Ce coté n'a pas été implémenté\n");
-  // }
-
+  while (1) {
+    frein();
+  }
   // ===== TESTS =====
 
   // nav.go_to(1, 0);
@@ -129,13 +160,13 @@ void loop() {
 
   // ==========  CARRÉ  ==============
 
-  while (1) {
-    if (running) {
+  // while (1) {
+  //   if (running) {
 
-      nav.avancer(0.3);
-      nav.rotate_by(PI_OVER_TWO);
-    }
-  }
+  //     nav.avancer(0.3);
+  //     nav.rotate_by(PI_OVER_TWO);
+  //   }
+  // }
 
   //
   // ======== PID VITESSE ==========
@@ -421,10 +452,7 @@ void check_all_GP2() {
 void frein() {
   motor_l.write(0.0f);
   motor_r.write(0.0f);
-  wait(1);
   nav.reset_pids();
 }
 
-void interrupt_nav_update(void){
-  nav.update();
-}
+void interrupt_nav_update(void) { nav.update(); }
