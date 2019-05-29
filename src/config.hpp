@@ -29,4 +29,6 @@
 // Error accepted to validate that this is a wall
 #define WALL_DETECTION_GAP 0.10f
 
+#define ROBOT_W 0.15f
+
 #endif // __CONFIG_H_

@@ -18,7 +18,7 @@ int GP2::detected() { return input->read() * GP2_COEF > distance_seuil; }
 
 float GP2::get_Distance() { return (input->read() * GP2_COEF); }
 
-void GP2::debug() { printf("\nGP2 : %f, %f", input->read(), get_Distance()); }
+void GP2::debug() { printf("GP2 : %f, %f", input->read(), get_Distance()); }
 
 int GP2::is_active() { return activated; }
 
@@ -38,10 +38,10 @@ int detected_all(GP2 gp2_list[], int gp2_nb) {
   return 0;
 }
 
-void frontGP2Action(Navigateur nav) {}
+// void frontGP2Action(Navigateur nav) {}
 
-void backGP2Action(Navigateur nav) {}
+// void backGP2Action(Navigateur nav) {}
 
-void leftGP2Action(Navigateur nav) {}
+// void leftGP2Action(Navigateur nav) {}
 
-void rightGP2Action(Navigateur nav) {}
+// void rightGP2Action(Navigateur nav) {}

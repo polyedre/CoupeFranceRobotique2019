@@ -44,9 +44,9 @@ AnalogIn gp2_analog_4(PF_5); // Gauche
 
 GP2 gp2_list[4] = {
     GP2(&gp2_analog_1, 0.5), // Devant
-    GP2(&gp2_analog_2, 0.3), // Derrière
-    GP2(&gp2_analog_3, 0.3), // Droite
-    GP2(&gp2_analog_4, 0.3), // Gauche
+    GP2(&gp2_analog_2, 0.6), // Derrière
+    GP2(&gp2_analog_3, 0.5), // Droite
+    GP2(&gp2_analog_4, 0.5), // Gauche
 };
 
 enum Side { BLUE_LEFT, BLUE_RIGHT };
@@ -76,7 +76,7 @@ void setup() {
 
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
-  // checkGP2_t.attach(&check_all_GP2, 0.1f);
+  //checkGP2_t.attach(&check_all_GP2, 0.1f);
   interrupt_nav_update_t.attach(&interrupt_nav_update, 0.01f);
 
   starterBtn.mode(PullUp);
@@ -100,12 +100,21 @@ void loop() {
 
   printf("Attente du démarrage...\n");
 
-  while (!starterBtn.read()) {
+  int starterCompteur = 0;
+  while (starterCompteur < 100) {
+    if (starterBtn.read()) {
+      starterCompteur++;
+    } else {
+      starterCompteur = 0;
+    }
   }
 
   printf("C'est parti !\n");
-
+  int tmp = 0;
   if (side == BLUE_LEFT) { // Bleu à gauche
+    
+    nav.go_to(-0.5f,0.0f);
+    for(;;){}
     printf("Action 1\n");
     nav.go_to(0.1f, 0.0f);
     frein();
@@ -113,17 +122,29 @@ void loop() {
     nav.rotate_by(PI_OVER_TWO);
     frein();
     printf("Action 2\n");
-    nav.go_to(0.1f, 0.3f);
+    nav.go_to(0.1f, 0.6f);
     frein();
     nav.rotate_by(-PI_OVER_TWO);
     frein();
-    nav.go_to(0.5f, 0.3f);
+    nav.go_to(0.5f, 0.6f);
     frein();
     nav.rotate_by(-3 * PI / 4 + 0.05);
     frein();
-    nav.go_to(0.2f, -0.4f);
+    nav.go_to(0.2f, -0.1f);
     frein();
-    nav.rotate_to(-PI_OVER_TWO);
+    nav.rotate_to(-PI);
+    frein();
+        // fin de la capture des 3 electrons devant les zones
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,-0.3f);
+    frein();
+    nav.rotate_to(PI_OVER_TWO);
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,0.6f);
+    frein();
+    nav.go_to(1.0f-ROBOT_W/2,0.3f);
+    frein();
+    nav.go_to(0.2f, -0.1f);
     frein();
   } else {
     printf("Action 1\n");
@@ -133,18 +154,32 @@ void loop() {
     nav.rotate_by(-PI_OVER_TWO);
     frein();
     printf("Action 2\n");
-    nav.go_to(0.1f, -0.3f);
+    nav.go_to(0.1f, -0.6f);
     frein();
-    nav.rotate_by(-PI_OVER_TWO);
+    nav.rotate_by(PI_OVER_TWO);
     frein();
-    nav.go_to(0.5f, -0.3f);
+    nav.go_to(0.5f, -0.6f);
     frein();
-    nav.rotate_by(-3 * PI / 4 + 0.05);
+    nav.rotate_by(3 * PI / 4 - 0.05);
     frein();
-    nav.go_to(0.2f, -0.4f);
+    nav.go_to(0.2f, 0.1f);
+    frein();
+    nav.rotate_to(PI);
+    // fin de la capture des 3 electrons devant les zones
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,0.3f);
     frein();
     nav.rotate_to(-PI_OVER_TWO);
     frein();
+    nav.go_to(1.3f-ROBOT_W/2,-0.6f);
+    frein();
+    nav.go_to(1.0f-ROBOT_W/2,-0.3f);
+    frein();
+    nav.go_to(0.2f, 0.1f);
+    frein();
+    while (1) {
+      frein();
+    }
   }
 
   while (1) {
@@ -405,10 +440,16 @@ int pos_is_on_table(float x, float y) {
 }
 
 void check_all_GP2() {
+  for (int i= 0; i < 4; i++) {
+    printf(" no%d : ",i+1);
+    gp2_list[i].debug();
+  }
+  printf("\r");
   if (int num = detected_all(gp2_list, 4)) {
     float theta = pos.get_theta();
     float obj_x;
     float obj_y;
+    num = 0;
     switch (num) {
     case 1: // Front GP2
       if (nav.sens == AVANT) {
@@ -416,17 +457,19 @@ void check_all_GP2() {
         obj_y = pos.get_y() + gp2_list[num].real_distance * sin(theta);
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
           frein();
+          printf("%f\n", gp2_list[num].get_Distance());
           if (debug_monitor)
             printf("\nStopped because object on the table\n");
         };
       }
       break;
     case 2: // Back GP2
-      if (nav.sens == AVANT) {
+      if (nav.sens == ARRIERE) {
         obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
         obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
           frein();
+          printf("%f\n", gp2_list[num].get_Distance());
           if (debug_monitor)
             printf("\nObject behind on the table\n");
         };
@@ -439,21 +482,22 @@ void check_all_GP2() {
         obj_y =
             pos.get_y() - gp2_list[num].real_distance * sin(theta - (PI / 4));
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-          // frein();
+          frein();
+          printf("%f\n", gp2_list[num].get_Distance());
           if (debug_monitor)
-            frein();
-          printf("\nObject right on the table\n");
+            printf("\nObject right on the table\n");
         };
       }
       break;
     case 4: // Left
-      if (nav.sens == ARRIERE) {
+      if (nav.sens == AVANT) {
         obj_x =
             pos.get_x() - gp2_list[num].real_distance * cos(theta + (PI / 4));
         obj_y =
             pos.get_y() - gp2_list[num].real_distance * sin(theta + (PI / 4));
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
           frein();
+          printf("%f\n", gp2_list[num].get_Distance());
           if (debug_monitor)
             printf("\nObject left on the table\n");
         };
