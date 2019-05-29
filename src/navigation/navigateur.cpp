@@ -120,7 +120,9 @@ void Navigateur::update() {
     if (sens == AVANT) {
       pid_a.setCommande(angle_absolu_destination);
     } else {
-      pid_a.setCommande(modulo_angle_absolu(angle_absolu_destination + PI));
+      float angle = modulo_angle_absolu(angle_absolu_destination + PI);
+      printf("%f", angle);
+      pid_a.setCommande(angle);
     }
   }
 
