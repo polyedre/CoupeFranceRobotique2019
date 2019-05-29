@@ -104,7 +104,7 @@ void loop() {
   }
 
   printf("C'est parti !\n");
-
+  int tmp = 0;
   if (side == BLUE_LEFT) { // Bleu à gauche
     printf("Action 1\n");
     nav.go_to(0.1f, 0.0f);
@@ -113,17 +113,29 @@ void loop() {
     nav.rotate_by(PI_OVER_TWO);
     frein();
     printf("Action 2\n");
-    nav.go_to(0.1f, 0.3f);
+    nav.go_to(0.1f, 0.6f);
     frein();
     nav.rotate_by(-PI_OVER_TWO);
     frein();
-    nav.go_to(0.5f, 0.3f);
+    nav.go_to(0.5f, 0.6f);
     frein();
     nav.rotate_by(-3 * PI / 4 + 0.05);
     frein();
-    nav.go_to(0.2f, -0.4f);
+    nav.go_to(0.2f, -0.1f);
     frein();
-    nav.rotate_to(-PI_OVER_TWO);
+    nav.rotate_to(-PI);
+    frein();
+        // fin de la capture des 3 electrons devant les zones
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,-0.3f);
+    frein();
+    nav.rotate_to(PI_OVER_TWO);
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,0.6f);
+    frein();
+    nav.go_to(1.0f-ROBOT_W/2,0.3f);
+    frein();
+    nav.go_to(0.2f, -0.1f);
     frein();
   } else {
     printf("Action 1\n");
@@ -133,17 +145,28 @@ void loop() {
     nav.rotate_by(-PI_OVER_TWO);
     frein();
     printf("Action 2\n");
-    nav.go_to(0.1f, -0.3f);
+    nav.go_to(0.1f, -0.6f);
     frein();
-    nav.rotate_by(-PI_OVER_TWO);
+    nav.rotate_by(PI_OVER_TWO);
     frein();
-    nav.go_to(0.5f, -0.3f);
+    nav.go_to(0.5f, -0.6f);
     frein();
-    nav.rotate_by(-3 * PI / 4 + 0.05);
+    nav.rotate_by(3 * PI / 4 - 0.05);
     frein();
-    nav.go_to(0.2f, -0.4f);
+    nav.go_to(0.2f, 0.1f);
+    frein();
+    nav.rotate_to(PI);
+    // fin de la capture des 3 electrons devant les zones
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,0.3f);
     frein();
     nav.rotate_to(-PI_OVER_TWO);
+    frein();
+    nav.go_to(1.3f-ROBOT_W/2,-0.6f);
+    frein();
+    nav.go_to(1.0f-ROBOT_W/2,-0.3f);
+    frein();
+    nav.go_to(0.2f, 0.1f);
     frein();
   }
 
