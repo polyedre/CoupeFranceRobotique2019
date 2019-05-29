@@ -110,7 +110,7 @@ void Navigateur::update() {
     pid_d.reset();
   }
 
-  if ((angle_relatif > PI - 0.3) && (angle_relatif < -PI + 0.3)) {
+  if ((angle_relatif > PI - 0.7) && (angle_relatif < -PI + 0.7)) {
     sens = ARRIERE;
   } else {
     sens = AVANT;

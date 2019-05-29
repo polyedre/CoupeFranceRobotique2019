@@ -434,40 +434,54 @@ void check_all_GP2() {
     float obj_y;
     switch (num) {
     case 1: // Front GP2
-      obj_x = pos.get_x() + gp2_list[num].real_distance * cos(theta);
-      obj_y = pos.get_y() + gp2_list[num].real_distance * sin(theta);
-      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-        frein();
-        if (debug_monitor)
-          printf("\nStopped because object on the table\n");
-      };
+      if (nav.sens == AVANT) {
+        obj_x = pos.get_x() + gp2_list[num].real_distance * cos(theta);
+        obj_y = pos.get_y() + gp2_list[num].real_distance * sin(theta);
+        if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+          frein();
+          if (debug_monitor)
+            printf("\nStopped because object on the table\n");
+        };
+      }
       break;
     case 2: // Back GP2
-      obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
-      obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
-      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-        if (debug_monitor)
-          printf("\nObject behind on the table\n");
-      };
+      if (nav.sens == AVANT) {
+        obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta);
+        obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta);
+        if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+          frein();
+          if (debug_monitor)
+            printf("\nObject behind on the table\n");
+        };
+      }
       break;
     case 3: // Right
-      obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta - (PI / 4));
-      obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta - (PI / 4));
-      // frein();
-      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-        if (debug_monitor)
+      if (nav.sens == AVANT) {
+        obj_x =
+            pos.get_x() - gp2_list[num].real_distance * cos(theta - (PI / 4));
+        obj_y =
+            pos.get_y() - gp2_list[num].real_distance * sin(theta - (PI / 4));
+        if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+          // frein();
+          if (debug_monitor)
+            frein();
           printf("\nObject right on the table\n");
-      };
+        };
+      }
       break;
     case 4: // Left
-      // frein();
-      obj_x = pos.get_x() - gp2_list[num].real_distance * cos(theta + (PI / 4));
-      obj_y = pos.get_y() - gp2_list[num].real_distance * sin(theta + (PI / 4));
-      if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-        if (debug_monitor)
-          printf("\nObject left on the table\n");
-      };
-      break;
+      if (nav.sens == ARRIERE) {
+        obj_x =
+            pos.get_x() - gp2_list[num].real_distance * cos(theta + (PI / 4));
+        obj_y =
+            pos.get_y() - gp2_list[num].real_distance * sin(theta + (PI / 4));
+        if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+          frein();
+          if (debug_monitor)
+            printf("\nObject left on the table\n");
+        };
+        break;
+      }
     }
   }
 }

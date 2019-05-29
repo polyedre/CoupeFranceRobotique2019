@@ -37,3 +37,11 @@ int detected_all(GP2 gp2_list[], int gp2_nb) {
   }
   return 0;
 }
+
+void frontGP2Action(Navigateur nav) {}
+
+void backGP2Action(Navigateur nav) {}
+
+void leftGP2Action(Navigateur nav) {}
+
+void rightGP2Action(Navigateur nav) {}

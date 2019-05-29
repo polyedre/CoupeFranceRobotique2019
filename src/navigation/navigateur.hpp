@@ -37,6 +37,7 @@ public:
   PIDVitesse pid_v_r;
   PIDDistance pid_d;
   PIDAngle pid_a;
+  enum Sens sens;
 
 private:
   float cible_x;
@@ -58,7 +59,6 @@ private:
   float cml;
   int actionFinished;
   int compteur;
-  enum Sens sens;
   float consigne_motor_l;
   float consigne_motor_r;
 };
