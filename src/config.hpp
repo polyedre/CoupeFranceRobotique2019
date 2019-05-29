@@ -23,8 +23,8 @@
 // TODO : Check table values
 #define HEIGHT_TABLE 2.0f
 #define WIDTH_TABLE 2.0f
-#define X_INIT 0.25f
-#define Y_INIT 1.0f
+#define X_INIT 0.15f
+#define Y_INIT (side == BLUE_RIGHT ? 0.75f : 1.25f)
 
 // Error accepted to validate that this is a wall
 #define WALL_DETECTION_GAP 0.10f
