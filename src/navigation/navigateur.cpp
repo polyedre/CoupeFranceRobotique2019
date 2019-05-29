@@ -120,7 +120,7 @@ void Navigateur::update() {
     if (sens == AVANT) {
       pid_a.setCommande(angle_absolu_destination);
     } else {
-      pid_a.setCommande(modulo_angle_absolu(angle_absolu_destination + PI));
+      pid_a.setCommande(modulo_angle_relatif(angle_absolu_destination + PI));
     }
   }
 
@@ -141,8 +141,8 @@ void Navigateur::update() {
     cmr = dist_cons - angle_cons; // Consigne moteur droit
     cml = dist_cons + angle_cons; // Consigne moteur gauche
   } else {
-    cmr = -dist_cons + angle_cons; // Consigne moteur droit
-    cml = -dist_cons - angle_cons; // Consigne moteur gauche
+    cmr = -dist_cons - angle_cons; // Consigne moteur droit
+    cml = -dist_cons + angle_cons; // Consigne moteur gauche
   }
 
   pid_v_r.setCommande(cmr);
@@ -261,7 +261,7 @@ void Navigateur::updatePos() {
 
 void Navigateur::debug() {
   printf("(%.2f,%.2f,%.2f)(%.1f,%.2f,%.2f) %s [%.2f|%.2f] R:%.2f "
-         "[A:%.2f,D:%.2f]\n",
+         "[A:%.2f,D:%.2f]\r",
          position->get_x(), position->get_y(),
          convert_degree(position->get_theta()), cible_x, cible_y,
          angle_absolu_destination, sens == AVANT ? "Av" : "Ar",
