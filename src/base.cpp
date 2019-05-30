@@ -39,7 +39,7 @@ void limiter_consigne(float *consigne, int *direction) {
   }
   // Commenté car géré directement dans la fonction update
   // consigne = min(*consigne, CONSIGNE_MAX);
-  *consigne = 0.03f + min(*consigne, 0.2f);
+  *consigne = 0.05f + min(*consigne, 0.3f);
 }
 
 float min(float a, float b) { return (a > b) ? b : a; }

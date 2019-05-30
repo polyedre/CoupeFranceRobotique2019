@@ -16,13 +16,13 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   float p_vitesse = 5;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.4, 0.000, 0.0, 0.02, 1, position, 0.4f,
-                     0.01f); // 0.5cm de précision
-  PIDAngle _pid_a(0.4, 0.0000, 0.0, 0.02, 1, position, 0.1f, 0.005f); // 1 degré
+  PIDDistance _pid_d(0.4, 0.001, 0.0, 0.04, 1, position, 0.4f,
+                     0.001); // 0.5cm de précision
+  PIDAngle _pid_a(0.4, 0.001, 0.0, 0.02, 1, position, 0.1f, 0.001f); // 1 degré
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 1, encod_l, 0.004,
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.004, 0, 0.001, 5, encod_l, 0.004,
                       1.0f, 1);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 1, encod_r, 0.004,
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.004, 0, 0.001, 5, encod_r, 0.004,
                       1.0f, 1);
 
   pid_d = _pid_d;
@@ -69,8 +69,8 @@ void Navigateur::update() {
   float y = position->get_y();
   float theta = position->get_theta();
 
-  dir_r = 0;
-  dir_l = 1;
+  dir_r = 1;
+  dir_l = 0;
 
   // Initialisation des consignes
 
@@ -79,7 +79,7 @@ void Navigateur::update() {
   if (updateAngleCons) {
     if (pid_d.actionFinished) {
       compteur++;
-      if (compteur > 10) {
+      if (compteur > 50) {
         actionFinished = 1;
       }
     } else {
@@ -139,11 +139,11 @@ void Navigateur::update() {
     à `limiter_consigne`.
     */
   if (sens == AVANT) {
-    cmr = dist_cons - angle_cons; // Consigne moteur droit
-    cml = dist_cons + angle_cons; // Consigne moteur gauche
+    cmr = dist_cons + angle_cons; // Consigne moteur droit
+    cml = dist_cons - angle_cons; // Consigne moteur gauche
   } else {
-    cmr = -dist_cons - angle_cons; // Consigne moteur droit
-    cml = -dist_cons + angle_cons; // Consigne moteur gauche
+    cmr = -dist_cons + angle_cons; // Consigne moteur droit
+    cml = -dist_cons - angle_cons; // Consigne moteur gauche
   }
 
   pid_v_r.setCommande(cmr);
