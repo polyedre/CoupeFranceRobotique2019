@@ -25,6 +25,8 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.004, 0, 0.001, 5, encod_r, 0.004,
                       1.0f, 1);
 
+  time.start();
+
   pid_d = _pid_d;
   pid_a = _pid_a;
   pid_v_l = _pid_v_l;
@@ -43,6 +45,7 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   m_r->period(PWM_PERIOD);
   d_l = _d_l;
   d_r = _d_r;
+
 }
 
 void Navigateur::set_destination(float x, float y) {
@@ -66,6 +69,11 @@ void Navigateur::reset_pids() {
 }
 
 void Navigateur::update() {
+
+  if (time.read_ms() > 100000 + start_time) {
+    m_r->write(0.0f);
+    m_l->write(0.0f);
+  }else{
 
   float x = position->get_x();
   float y = position->get_y();
@@ -130,7 +138,7 @@ void Navigateur::update() {
   angle_cons = pid_a.getConsigne();
 
   dist_cons = min(dist_cons, 0.2);
-  angle_cons = min(angle_cons, 0.03f);
+  angle_cons = min(angle_cons, 0.2f);
 
   dist_cons = max(dist_cons, -0.2f);
   angle_cons = max(angle_cons, -0.2f);
@@ -167,6 +175,7 @@ void Navigateur::update() {
 
   *d_r = dir_r;
   *d_l = dir_l;
+  }
 }
 
 /*

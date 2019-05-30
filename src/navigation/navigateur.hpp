@@ -39,6 +39,8 @@ public:
   PIDAngle pid_a;
   enum Sens sens;
   int actionFinished;
+  Timer time;
+  float start_time;
 
 private:
   float cible_x;

@@ -113,7 +113,7 @@ void loop() {
       starterCompteur = 0;
     }
   }
-
+  nav.start_time = nav.time.read_ms();
   printf("C'est parti !\n");
   nav.actionFinished = 0;
   int tmp = 0;
