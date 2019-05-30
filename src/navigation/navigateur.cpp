@@ -18,12 +18,12 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   // FIXME : Trouver bonnes valeurs de pid.
   PIDDistance _pid_d(0.4, 0.000, 0.0, 0.02, 1, position, 0.4f,
                      0.01f); // 0.5cm de précision
-  PIDAngle _pid_a(0.4, 0.0000, 0.0, 0.02, 0, position, 0.1f, 0.005f); // 1 degré
+  PIDAngle _pid_a(0.4, 0.0000, 0.0, 0.02, 1, position, 0.1f, 0.005f); // 1 degré
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.01, 0, 0.001, 0, encod_l, 0.004,
-                      1.0f, 0.4f);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.01, 0, 0.001, 0, encod_r, 0.004,
-                      1.0f, 0.4f);
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.001, 0, 0.001, 1, encod_l, 0.004,
+                      1.0f, 1);
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.001, 0, 0.001, 1, encod_r, 0.004,
+                      1.0f, 1);
 
   pid_d = _pid_d;
   pid_a = _pid_a;
@@ -107,10 +107,11 @@ void Navigateur::update() {
     triggered = 1;
     dist_cons = updateAngleCons ? pid_d.getConsigne() : 0;
   } else {
+
     pid_d.reset();
   }
 
-  if ((angle_relatif > PI - 0.7) && (angle_relatif < -PI + 0.7)) {
+  if ((angle_relatif > PI - 0.7) || (angle_relatif < -PI + 0.7)) {
     sens = ARRIERE;
   } else {
     sens = AVANT;
@@ -120,9 +121,7 @@ void Navigateur::update() {
     if (sens == AVANT) {
       pid_a.setCommande(angle_absolu_destination);
     } else {
-      float angle = modulo_angle_absolu(angle_absolu_destination + PI);
-      printf("%f", angle);
-      pid_a.setCommande(angle);
+      pid_a.setCommande(modulo_angle_absolu(angle_absolu_destination + PI));
     }
   }
 
@@ -263,11 +262,11 @@ void Navigateur::updatePos() {
 
 void Navigateur::debug() {
   printf("(%.2f,%.2f,%.2f)(%.1f,%.2f,%.2f) %s [%.2f|%.2f] R:%.2f "
-         "[A:%.2f,D:%.2f]\r",
+         "[A:%.2f,D:%.2f] %f, %f\n",
          position->get_x(), position->get_y(),
          convert_degree(position->get_theta()), cible_x, cible_y,
          angle_absolu_destination, sens == AVANT ? "Av" : "Ar",
          consigne_motor_l, consigne_motor_r,
          convert_degree(modulo_angle_relatif(angle_relatif)), angle_cons,
-         dist_cons);
+         dist_cons, pid_v_l.accumulateur, pid_v_r.accumulateur);
 }

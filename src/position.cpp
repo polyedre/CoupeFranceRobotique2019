@@ -34,22 +34,22 @@ void Position::update(short vitesses[]) {
   short dl = encod_l->diff();
   short dr = encod_r->diff();
 
-  vitesses[0] = -dr;
-  vitesses[1] = -dl;
+  vitesses[0] = dr;
+  vitesses[1] = dl;
 
   float del = dl / ENCODEUR_ECHELLE; // mouvement de l'encodeur gauche en mètres
   float der = dr / ENCODEUR_ECHELLE; // mouvement de l'encodeur droit en mètres
 
   // On avance de la motié de la longueur
-  x -= (del + der) / 4 * cos(theta);
-  y -= (del + der) / 4 * sin(theta);
+  x += (del + der) / 4 * cos(theta);
+  y += (del + der) / 4 * sin(theta);
 
   // On tourne
   theta = modulo_angle_absolu((der - del) / DIAMETER + theta);
 
   // On réavance de la motié de la longueur
-  x -= (del + der) / 4 * cos(theta);
-  y -= (del + der) / 4 * sin(theta);
+  x += (del + der) / 4 * cos(theta);
+  y += (del + der) / 4 * sin(theta);
 }
 
 void Position::init() { reset(); }

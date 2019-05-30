@@ -14,8 +14,11 @@
 DigitalOut led(LED3);
 Serial usb(USBTX, USBRX);
 
-Encoder enc_l(TIM3); // PD12 - PD13
-Encoder enc_r(TIM4); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
+DigitalOut sideLed1(PD_0);
+DigitalOut sideLed2(PD_1);
+
+Encoder enc_l(TIM3); // PC6  - PC7 ou PA6 - PA7 ou PB4 - PB5
+Encoder enc_r(TIM4); // PD12 - PD13
 
 PwmOut motor_l(PB_13);
 PwmOut motor_r(PB_15);
@@ -25,8 +28,9 @@ DigitalOut break_r(PE_9);
 DigitalOut direction_l(PE_11);
 DigitalOut break_l(PF_14);
 
-DigitalIn starterBtn(PE_4);
-DigitalIn sideBtn(PF_15);
+DigitalIn starterBtn1(PF_1);
+DigitalOut starterBtn2(PF_0);
+DigitalIn sideBtn(PC_8);
 
 Ticker updatePos_t;
 Ticker checkGP2_t;
@@ -37,10 +41,10 @@ Navigateur nav(&pos, &motor_l, &motor_r, &direction_l, &direction_r, &enc_l,
                &enc_r);
 
 // // TODO : Donner des ports aux GP2
-AnalogIn gp2_analog_1(PC_0); // Devant
-AnalogIn gp2_analog_2(PC_3); // Derrière
-AnalogIn gp2_analog_3(PF_3); // Droite
-AnalogIn gp2_analog_4(PF_5); // Gauche
+AnalogIn gp2_analog_1(PA_3); // Devant
+AnalogIn gp2_analog_2(PC_0); // Derrière
+AnalogIn gp2_analog_3(PC_3); // Droite
+AnalogIn gp2_analog_4(PF_3); // Gauche
 
 GP2 gp2_list[4] = {
     GP2(&gp2_analog_1, 0.5), // Devant
@@ -76,10 +80,11 @@ void setup() {
 
   usb.attach(&handleInput);
   updatePos_t.attach(&updatePos, 0.001f);
-  //checkGP2_t.attach(&check_all_GP2, 0.1f);
+  // checkGP2_t.attach(&check_all_GP2, 0.1f);
   interrupt_nav_update_t.attach(&interrupt_nav_update, 0.01f);
 
-  starterBtn.mode(PullUp);
+  starterBtn2 = 0;
+  starterBtn1.mode(PullUp);
   sideBtn.mode(PullUp);
 
   if (sideBtn.read()) {
@@ -102,7 +107,7 @@ void loop() {
 
   int starterCompteur = 0;
   while (starterCompteur < 100) {
-    if (starterBtn.read()) {
+    if (starterBtn1.read()) {
       starterCompteur++;
     } else {
       starterCompteur = 0;
@@ -110,42 +115,61 @@ void loop() {
   }
 
   printf("C'est parti !\n");
+  nav.actionFinished = 0;
   int tmp = 0;
   if (side == BLUE_LEFT) { // Bleu à gauche
-    
-    nav.go_to(-0.5f,0.0f);
-    for(;;){}
+
+    nav.pid_a.setCommande(0);
+    while (1) {
+      nav.debug();
+      wait(0.01f);
+    }
+    // nav.go_to(2, 0);
+    // while (1) {}
     printf("Action 1\n");
     nav.go_to(0.1f, 0.0f);
     frein();
     printf("Action 2\n");
     nav.rotate_by(PI_OVER_TWO);
     frein();
-    printf("Action 2\n");
+    printf("Action 3\n");
     nav.go_to(0.1f, 0.6f);
     frein();
+    printf("Action 4\n");
     nav.rotate_by(-PI_OVER_TWO);
     frein();
+    printf("Action 5\n");
     nav.go_to(0.5f, 0.6f);
     frein();
+    printf("Action 6\n");
     nav.rotate_by(-3 * PI / 4 + 0.05);
     frein();
+    printf("Action 7\n");
     nav.go_to(0.2f, -0.1f);
     frein();
+    printf("Action 8\n");
     nav.rotate_to(-PI);
     frein();
-        // fin de la capture des 3 electrons devant les zones
+    // fin de la capture des 3 electrons devant les zones
     frein();
-    nav.go_to(1.3f-ROBOT_W/2,-0.3f);
+    printf("Action 9\n");
+    nav.go_to(1.3f - ROBOT_W / 2, -0.3f);
     frein();
+    printf("Action 10\n");
     nav.rotate_to(PI_OVER_TWO);
     frein();
-    nav.go_to(1.3f-ROBOT_W/2,0.6f);
+    printf("Action 11\n");
+    nav.go_to(1.3f - ROBOT_W / 2, 0.6f);
     frein();
-    nav.go_to(1.0f-ROBOT_W/2,0.3f);
+    printf("Action 12\n");
+    nav.go_to(1.0f - ROBOT_W / 2, 0.3f);
     frein();
+    printf("Action 13\n");
     nav.go_to(0.2f, -0.1f);
     frein();
+    while (1) {
+      frein();
+    }
   } else {
     printf("Action 1\n");
     nav.go_to(0.1f, 0.0f);
@@ -167,13 +191,13 @@ void loop() {
     nav.rotate_to(PI);
     // fin de la capture des 3 electrons devant les zones
     frein();
-    nav.go_to(1.3f-ROBOT_W/2,0.3f);
+    nav.go_to(1.3f - ROBOT_W / 2, 0.3f);
     frein();
     nav.rotate_to(-PI_OVER_TWO);
     frein();
-    nav.go_to(1.3f-ROBOT_W/2,-0.6f);
+    nav.go_to(1.3f - ROBOT_W / 2, -0.6f);
     frein();
-    nav.go_to(1.0f-ROBOT_W/2,-0.3f);
+    nav.go_to(1.0f - ROBOT_W / 2, -0.3f);
     frein();
     nav.go_to(0.2f, 0.1f);
     frein();
@@ -440,8 +464,8 @@ int pos_is_on_table(float x, float y) {
 }
 
 void check_all_GP2() {
-  for (int i= 0; i < 4; i++) {
-    printf(" no%d : ",i+1);
+  for (int i = 0; i < 4; i++) {
+    printf(" no%d : ", i + 1);
     gp2_list[i].debug();
   }
   printf("\r");

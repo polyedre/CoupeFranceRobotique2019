@@ -38,6 +38,10 @@ PID::PID(float _p, float _i, float _d, float _erreurSeuil,
   consigne = 0;
 
   deltaRampe = _deltaRampe;
+
+  for (int i = 0; i < 10; i++) {
+    fifo.push(0);
+  }
 }
 
 float PID::calculerConsigne() {
@@ -71,6 +75,16 @@ float PID::getDerivee() {
 void PID::AccumulerErreur(float erreur) {
 
   accumulateur += erreur;
+  // accumulateur -= fifo.back();
+  // fifo.pop();
+
+  if (accumulateur > accumulateurSeuil) {
+    accumulateur = accumulateurSeuil;
+  } else if (accumulateur < -accumulateurSeuil) {
+    accumulateur = -accumulateurSeuil;
+  } else {
+    // fifo.push(erreur);
+  }
 
   tab_shift(derivee_data, 3);
   derivee_data[0] = erreur;
@@ -91,7 +105,7 @@ float PID::getConsigne() {
 
 void PID::reset() {
   compteur_acc = 0;
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 10; i++) {
     fifo.push(0);
     fifo.pop();
   }
