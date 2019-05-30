@@ -47,9 +47,9 @@ AnalogIn gp2_analog_3(PC_3); // Droite
 AnalogIn gp2_analog_4(PF_3); // Gauche
 
 GP2 gp2_list[4] = {
-    GP2(&gp2_analog_1, 0.5), // Devant
-    GP2(&gp2_analog_2, 0.5), // Derrière
-    GP2(&gp2_analog_3, 0.5), // Droite
+    GP2(&gp2_analog_1, 0.4), // Devant
+    GP2(&gp2_analog_2, 0.4), // Derrière
+    GP2(&gp2_analog_3, 0.4), // Droite
     GP2(&gp2_analog_4, 0.5), // Gauche
 };
 
@@ -120,7 +120,7 @@ void loop() {
   if (side == BLUE_LEFT) { // Bleu à gauche
 
     printf("Action 1\n");
-    nav.go_to(0.1f, 0.0f);
+    nav.go_to(0.08f, 0.0f);
     frein();
     printf("Action 2\n");
     nav.rotate_by(PI_OVER_TWO);
@@ -152,7 +152,7 @@ void loop() {
     nav.rotate_to(PI_OVER_TWO);
     frein();
     printf("Action 11\n");
-    nav.go_to(1.3f - ROBOT_W / 2, 0.6f);
+    nav.go_to(1.3f - ROBOT_W / 2 - 0.1f, 0.6f);
     frein();
     printf("Action 12\n");
     nav.go_to(1.0f - ROBOT_W / 2, 0.3f);
@@ -165,7 +165,7 @@ void loop() {
     }
   } else {
     printf("Action 1\n");
-    nav.go_to(0.1f, 0.0f);
+    nav.go_to(0.08f, 0.0f);
     frein();
     printf("Action 2\n");
     nav.rotate_by(-PI_OVER_TWO);
@@ -188,7 +188,7 @@ void loop() {
     frein();
     nav.rotate_to(-PI_OVER_TWO);
     frein();
-    nav.go_to(1.3f - ROBOT_W / 2, -0.6f);
+    nav.go_to(1.3f - ROBOT_W / 2 - 0.1f, -0.6f);
     frein();
     nav.go_to(1.0f - ROBOT_W / 2, -0.3f);
     frein();
@@ -458,7 +458,6 @@ int pos_is_on_table(float x, float y) {
 
 void check_all_GP2() {
   if (int num = detected_all(gp2_list, 4)) {
-    printf("a\n");
     float theta = pos.get_theta();
     float obj_x;
     float obj_y;
@@ -466,7 +465,6 @@ void check_all_GP2() {
     switch (num) {
     case 1: // Front GP2
       if (nav.sens == AVANT) {
-        printf("b\n");
         obj_x = pos.get_x() + gp2_list[num - 1].real_distance * cos(theta);
         obj_y = pos.get_y() + gp2_list[num - 1].real_distance * sin(theta);
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
@@ -478,7 +476,6 @@ void check_all_GP2() {
       break;
     case 2: // Back GP2
       if (nav.sens == ARRIERE) {
-        printf("c\n");
         obj_x = pos.get_x() - gp2_list[num - 1].real_distance * cos(theta);
         obj_y = pos.get_y() - gp2_list[num - 1].real_distance * sin(theta);
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
@@ -488,34 +485,34 @@ void check_all_GP2() {
         };
       }
       break;
-      // case 3: // Right
-      //   if (nav.sens == AVANT) {
-      //     obj_x = pos.get_x() -
-      //             gp2_list[num - 1].real_distance * cos(theta - (PI / 4));
-      //     obj_y = pos.get_y() -
-      //             gp2_list[num - 1].real_distance * sin(theta - (PI / 4));
-      //     if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y))
-      //     {
-      //       frein();
-      //       if (debug_monitor)
-      //         printf("\nObject right on the table\n");
-      //     };
-      //   }
-      //   break;
-      // case 4: // Left
-      //   if (nav.sens == AVANT) {
-      //     obj_x = pos.get_x() -
-      //             gp2_list[num - 1].real_distance * cos(theta + (PI / 4));
-      //     obj_y = pos.get_y() -
-      //             gp2_list[num - 1].real_distance * sin(theta + (PI / 4));
-      //     if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y))
-      //     {
-      //       frein();
-      //       if (debug_monitor)
-      //         printf("\nObject left on the table\n");
-      //     };
-      //     break;
-      //   }
+    case 3: // Right
+      if (nav.sens == AVANT) {
+        obj_x = pos.get_x() -
+                gp2_list[num - 1].real_distance * cos(theta - (PI / 4));
+        obj_y = pos.get_y() -
+                gp2_list[num - 1].real_distance * sin(theta - (PI / 4));
+        if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+          frein();
+          if (debug_monitor)
+            printf("\nObject right on the table\n");
+        };
+      }
+      break;
+    case 4: // Left
+      if (nav.sens == AVANT) {
+        obj_x = pos.get_x() -
+                gp2_list[num - 1].real_distance * cos(theta + (PI / 4));
+        obj_y = pos.get_y() -
+                gp2_list[num - 1].real_distance * sin(theta + (PI / 4));
+        // if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+        frein();
+        // if (debug_monitor)
+        // printf("\nObject left on the table\n");
+        // };
+        break;
+      }
+    default:
+      break;
     }
   }
 }
@@ -524,6 +521,7 @@ void frein() {
   motor_l.write(0.0f);
   motor_r.write(0.0f);
   nav.reset_pids();
+  wait(0.1f);
 }
 
 void interrupt_nav_update(void) { nav.update(); }

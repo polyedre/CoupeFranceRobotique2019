@@ -61,6 +61,8 @@ void Navigateur::reset() {
 void Navigateur::reset_pids() {
   pid_a.reset();
   pid_d.reset();
+  pid_v_l.reset();
+  pid_v_r.reset();
 }
 
 void Navigateur::update() {
@@ -128,7 +130,7 @@ void Navigateur::update() {
   angle_cons = pid_a.getConsigne();
 
   dist_cons = min(dist_cons, 0.2);
-  angle_cons = min(angle_cons, 0.2);
+  angle_cons = min(angle_cons, 0.03f);
 
   dist_cons = max(dist_cons, -0.2f);
   angle_cons = max(angle_cons, -0.2f);
