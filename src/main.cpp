@@ -105,7 +105,20 @@ void loop() {
 
   printf("Attente du démarrage...\n");
 
+
   int starterCompteur = 0;
+  while (starterCompteur < 100) {
+    motor_l.write(0.0f);
+    motor_r.write(0.0f);
+    nav.reset_pids();
+    if (starterBtn1.read() == 0) {
+      starterCompteur++;
+    } else {
+      starterCompteur = 0;
+    }
+  }
+
+  starterCompteur = 0;
   while (starterCompteur < 100) {
     if (starterBtn1.read()) {
       starterCompteur++;
@@ -146,23 +159,22 @@ void loop() {
     // fin de la capture des 3 electrons devant les zones
     frein();
     printf("Action 9\n");
-    nav.go_to(1.3f - ROBOT_W / 2, -0.3f);
+    nav.go_to(1.2f - ROBOT_W / 2, -0.3f);
     frein();
     printf("Action 10\n");
     nav.rotate_to(PI_OVER_TWO);
     frein();
     printf("Action 11\n");
-    nav.go_to(1.05f - ROBOT_W / 2 - 0.1f, 0.6f);
+    nav.go_to(1.2f - ROBOT_W / 2, 0.35f);
     frein();
     printf("Action 12\n");
-    nav.go_to(1.05f - ROBOT_W / 2 -0.1f, 0.3f);
+    nav.go_to(1.0f - ROBOT_W / 2, 0.3f); // on the zone 
     frein();
     nav.rotate_to(-PI + PI/4);
     frein();
-    nav.go_to(0.15f, -0.1f);
+    nav.go_to(0.15f, -0.15f);
     frein();
     while (1) {
-      frein();
     }
   } else {
     printf("Action 1\n");
@@ -185,20 +197,19 @@ void loop() {
     nav.rotate_to(PI);
     // fin de la capture des 3 electrons devant les zones
     frein();
-    nav.go_to(1.05f - ROBOT_W / 2, 0.3f);
+    nav.go_to(1.2f - ROBOT_W / 2, 0.3f);
     frein();
     nav.rotate_to(-PI_OVER_TWO);
     frein();
-    nav.go_to(1.05f - ROBOT_W / 2 - 0.1f, -0.6f);
+    nav.go_to(1.2f - ROBOT_W / 2, -0.35f);
     frein();
-    nav.go_to(1.05f - ROBOT_W / 2 -0.1f, -0.3f);
+    nav.go_to(1.0f - ROBOT_W / 2, -0.3f);
     frein();
     nav.rotate_to(PI - PI/4);
     frein();
-    nav.go_to(0.15f, 0.1f);
+    nav.go_to(0.15f, 0.15f);
     frein();
     while (1) {
-      frein();
     }
   }
 
