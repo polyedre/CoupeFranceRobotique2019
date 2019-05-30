@@ -447,7 +447,8 @@ int pos_is_a_wall(float x, float y) {
   return (abs(x - (0 - X_INIT)) < WALL_DETECTION_GAP) ||
          (abs(x - (HEIGHT_TABLE - X_INIT)) < WALL_DETECTION_GAP) ||
          (abs(x - (0 - Y_INIT)) < WALL_DETECTION_GAP) ||
-         (abs(x - (WIDTH_TABLE - X_INIT)) < WALL_DETECTION_GAP);
+         (abs(x - (WIDTH_TABLE - X_INIT)) < WALL_DETECTION_GAP) ||
+         (abs(x - (CENTER_WALL_POS - X_INIT)) < WALL_DETECTION_GAP);
 }
 
 /* Return whether the position (x, y) is on the table */
@@ -487,10 +488,8 @@ void check_all_GP2() {
       break;
     case 3: // Right
       if (nav.sens == AVANT) {
-        obj_x = pos.get_x() -
-                gp2_list[num - 1].real_distance * cos(theta - (PI / 4));
-        obj_y = pos.get_y() -
-                gp2_list[num - 1].real_distance * sin(theta - (PI / 4));
+        obj_x = pos.get_x() + gp2_list[num - 1].real_distance * cos(theta);
+        obj_y = pos.get_y() + gp2_list[num - 1].real_distance * sin(theta);
         if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
           frein();
           if (debug_monitor)
@@ -500,15 +499,13 @@ void check_all_GP2() {
       break;
     case 4: // Left
       if (nav.sens == AVANT) {
-        obj_x = pos.get_x() -
-                gp2_list[num - 1].real_distance * cos(theta + (PI / 4));
-        obj_y = pos.get_y() -
-                gp2_list[num - 1].real_distance * sin(theta + (PI / 4));
-        // if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
-        frein();
-        // if (debug_monitor)
-        // printf("\nObject left on the table\n");
-        // };
+        obj_x = pos.get_x() + gp2_list[num - 1].real_distance * cos(theta);
+        obj_y = pos.get_y() + gp2_list[num - 1].real_distance * sin(theta);
+        if (pos_is_on_table(obj_x, obj_y) && !pos_is_a_wall(obj_x, obj_y)) {
+          frein();
+          if (debug_monitor)
+            printf("\nObject left on the table\n");
+        };
         break;
       }
     default:
