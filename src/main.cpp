@@ -23,7 +23,7 @@ Encoder enc_r(TIM4); // PD12 - PD13
 PwmOut motor_l(PB_15);
 PwmOut motor_r(PB_13);
 
-PwmOut signalExperience(PG_5);
+DigitalOut signalExperience(PC_8);
 
 DigitalOut direction_r(PF_13);
 DigitalOut break_r(PE_9);
@@ -66,7 +66,7 @@ void test_rotation();
 void check_all_GP2();
 void frein();
 void interrupt_nav_update(void);
-
+void send_signal_exp(void);
 /* Global variables */
 
 int debug_monitor = 1;
@@ -128,16 +128,18 @@ void loop() {
       starterCompteur = 0;
     }
   }
-
-  signalExperience.period(0.001f);
-  signalExperience.write(0.5f);
-  wait(0.5f);
-  signalExperience.write(0.0f);
-
+  send_signal_exp();
+  frein();
   nav.start_time = nav.time.read_ms();
   printf("C'est parti !\n");
   nav.actionFinished = 0;
   int tmp = 0;
+  // while (1)
+  // {
+  //   nav.go_to(0.5f, 0.0f);
+  //   frein();
+  // }
+  
   if (side == BLUE_LEFT) { // Bleu à gauche
 
     printf("Action 1\n");
@@ -544,3 +546,13 @@ void frein() {
 }
 
 void interrupt_nav_update(void) { nav.update(); }
+
+void send_signal_exp(){
+  for(int i = 0 ; i< 1000 ; i++){
+    signalExperience = 1;
+    wait_us(300);
+    signalExperience = 0;
+    wait_us(200);
+  }
+}
+
