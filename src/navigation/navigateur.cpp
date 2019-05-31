@@ -16,13 +16,13 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   float p_vitesse = 5;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
-  PIDDistance _pid_d(0.40, 0.002, 0.0, 0.04, 2, position, 0.4f,
+  PIDDistance _pid_d(0.40, 0.001, 0.0, 0.04, 2, position, 0.4f,
                      0.01); // 0.5cm de précision
   PIDAngle _pid_a(0.48, 0.001, 0.0, 0.02, 1, position, 0.1f, 0.01f); // 1 degré
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.002, 0, 0.001, 2, encod_l, 0.004,
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.004, 0, 0.001, 2, encod_l, 0.004,
                       1.0f, 1);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.002, 0, 0.001, 2, encod_r, 0.004,
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.00, 0, 0.001, 2, encod_r, 0.004,
                       1.0f, 1);
 
   time.start();
