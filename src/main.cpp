@@ -23,6 +23,8 @@ Encoder enc_r(TIM4); // PD12 - PD13
 PwmOut motor_l(PB_15);
 PwmOut motor_r(PB_13);
 
+// PwmOut signal();
+
 DigitalOut direction_r(PF_13);
 DigitalOut break_r(PE_9);
 DigitalOut direction_l(PE_11);
@@ -113,6 +115,11 @@ void loop() {
       starterCompteur = 0;
     }
   }
+
+  signal.period(0.001f);
+  signal.write(0.5f);
+  wait(0.5f);
+  signal.write(0.0f);
 
   printf("C'est parti !\n");
   nav.actionFinished = 0;
