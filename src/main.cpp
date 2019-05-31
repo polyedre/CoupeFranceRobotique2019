@@ -133,13 +133,13 @@ void loop() {
     nav.rotate_by(PI_OVER_TWO);
     frein();
     printf("Action 3\n");
-    nav.go_to(0.1f, 0.6f);
+    nav.go_to(0.08f, 0.55f);
     frein();
     printf("Action 4\n");
     nav.rotate_by(-PI_OVER_TWO);
     frein();
     printf("Action 5\n");
-    nav.go_to(0.5f, 0.6f);
+    nav.go_to(0.5f, 0.66f);
     frein();
     printf("Action 6\n");
     nav.rotate_by(-3 * PI / 4 + 0.05);
@@ -159,10 +159,10 @@ void loop() {
     nav.rotate_to(PI_OVER_TWO);
     frein();
     printf("Action 11\n");
-    nav.go_to(1.3f - ROBOT_W / 2 - 0.1f, 0.6f);
+    nav.go_to(1.05f - ROBOT_W / 2 - 0.1f, 0.6f);
     frein();
     printf("Action 12\n");
-    nav.go_to(1.0f - ROBOT_W / 2, 0.3f);
+    nav.go_to(1.05f - ROBOT_W / 2, 0.3f);
     frein();
     printf("Action 13\n");
     nav.go_to(0.2f, -0.1f);
@@ -178,11 +178,11 @@ void loop() {
     nav.rotate_by(-PI_OVER_TWO);
     frein();
     printf("Action 2\n");
-    nav.go_to(0.1f, -0.6f);
+    nav.go_to(0.08f, -0.55f);
     frein();
     nav.rotate_by(PI_OVER_TWO);
     frein();
-    nav.go_to(0.5f, -0.6f);
+    nav.go_to(0.5f, -0.55f);
     frein();
     nav.rotate_by(3 * PI / 4 - 0.05);
     frein();
@@ -191,11 +191,11 @@ void loop() {
     nav.rotate_to(PI);
     // fin de la capture des 3 electrons devant les zones
     frein();
-    nav.go_to(1.3f - ROBOT_W / 2, 0.3f);
+    nav.go_to(1.05f - ROBOT_W / 2, 0.3f);
     frein();
     nav.rotate_to(-PI_OVER_TWO);
     frein();
-    nav.go_to(1.3f - ROBOT_W / 2 - 0.1f, -0.6f);
+    nav.go_to(1.05f - ROBOT_W / 2 - 0.1f, -0.6f);
     frein();
     nav.go_to(1.0f - ROBOT_W / 2, -0.3f);
     frein();
