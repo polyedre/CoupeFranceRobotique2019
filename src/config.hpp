@@ -25,7 +25,7 @@
 #define WIDTH_TABLE 2.0f
 #define X_INIT 0.15f
 #define Y_INIT (side == BLUE_RIGHT ? 0.75f : 1.25f)
-#define CENTER_WALL_POS = (side == BLUE_RIGHT ? 1.5f : 0.5f)
+#define CENTER_WALL_POS (side == BLUE_RIGHT ? 1.5f : 0.5f)
 
 // Error accepted to validate that this is a wall
 #define WALL_DETECTION_GAP 0.10f
