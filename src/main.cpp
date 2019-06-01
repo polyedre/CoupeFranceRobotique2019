@@ -34,6 +34,8 @@ DigitalIn starterBtn1(PF_1);
 DigitalOut starterBtn2(PF_0);
 DigitalIn sideBtn(PC_8);
 
+Serial bt(PE_8, PE_7); // TX, RX
+
 Ticker updatePos_t;
 Ticker checkGP2_t;
 Ticker interrupt_nav_update_t;
@@ -67,6 +69,8 @@ void check_all_GP2();
 void frein();
 void interrupt_nav_update(void);
 void send_signal_exp(void);
+void handleSerial();
+
 /* Global variables */
 
 int debug_monitor = 1;
@@ -74,15 +78,23 @@ int running = 1;
 int move = 1;
 enum Side side;
 
+int RX = 0;
+int RY = 0;
+
+float cml;
+float cmr;
+
 void setup() {
 
   // Communication série
   usb.baud(115200);
+  bt.baud(9600);
   printf("\n\nInitialisation du programme.\n");
 
   usb.attach(&handleInput);
+  bt.attach(&handleSerial);
   updatePos_t.attach(&updatePos, 0.001f);
-  checkGP2_t.attach(&check_all_GP2, 0.1f);
+  // checkGP2_t.attach(&check_all_GP2, 0.1f);
   interrupt_nav_update_t.attach(&interrupt_nav_update, 0.01f);
 
   starterBtn2 = 0;
@@ -107,174 +119,40 @@ void loop() {
 
   printf("Attente du démarrage...\n");
 
-
-  int starterCompteur = 0;
-  while (starterCompteur < 100) {
-    motor_l.write(0.0f);
-    motor_r.write(0.0f);
-    nav.reset_pids();
-    if (starterBtn1.read() == 0) {
-      starterCompteur++;
-    } else {
-      starterCompteur = 0;
-    }
-  }
-
-  starterCompteur = 0;
-  while (starterCompteur < 100) {
-    if (starterBtn1.read()) {
-      starterCompteur++;
-    } else {
-      starterCompteur = 0;
-    }
-  }
-  send_signal_exp();
-  frein();
-  nav.start_time = nav.time.read_ms();
-  printf("C'est parti !\n");
-  nav.actionFinished = 0;
-  int tmp = 0;
-  // while (1)
-  // {
-  //   nav.go_to(0.5f, 0.0f);
-  //   frein();
-  // }
-  
-  if (side == BLUE_LEFT) { // Bleu à gauche
-
-    printf("Action 1\n");
-    nav.go_to(0.08f, 0.0f);
-    frein();
-    printf("Action 2\n");
-    nav.rotate_by(PI_OVER_TWO);
-    frein();
-    printf("Action 3\n");
-    nav.go_to(0.08f, 0.55f);
-    frein();
-    printf("Action 4\n");
-    nav.rotate_by(-PI_OVER_TWO);
-    frein();
-    printf("Action 5\n");
-    nav.go_to(0.5f, 0.66f);
-    frein();
-    printf("Action 6\n");
-    nav.rotate_by(-3 * PI / 4 + 0.05);
-    frein();
-    printf("Action 7\n");
-    nav.go_to(0.2f, -0.1f);
-    frein();
-    printf("Action 8\n");
-    nav.rotate_to(-PI);
-    frein();
-    // fin de la capture des 3 electrons devant les zones
-    frein();
-    printf("Action 9\n");
-    nav.go_to(1.2f - ROBOT_W / 2, -0.3f);
-    frein();
-    printf("Action 10\n");
-    nav.rotate_to(PI_OVER_TWO);
-    frein();
-    printf("Action 11\n");
-    nav.go_to(1.2f - ROBOT_W / 2, 0.35f);
-    frein();
-    printf("Action 12\n");
-    nav.go_to(1.0f - ROBOT_W / 2, 0.3f); // on the zone 
-    frein();
-    nav.rotate_to(-PI + PI/4);
-    frein();
-    nav.go_to(0.15f, -0.15f);
-    frein();
-    while (1) {
-    }
-  } else {
-    printf("Action 1\n");
-    nav.go_to(0.08f, 0.0f);
-    frein();
-    printf("Action 2\n");
-    nav.rotate_by(-PI_OVER_TWO);
-    frein();
-    printf("Action 2\n");
-    nav.go_to(0.08f, -0.55f);
-    frein();
-    nav.rotate_by(PI_OVER_TWO);
-    frein();
-    nav.go_to(0.5f, -0.55f);
-    frein();
-    nav.rotate_by(3 * PI / 4 - 0.05);
-    frein();
-    nav.go_to(0.2f, 0.1f);
-    frein();
-    nav.rotate_to(PI);
-    // fin de la capture des 3 electrons devant les zones
-    frein();
-    nav.go_to(1.2f - ROBOT_W / 2, 0.3f);
-    frein();
-    nav.rotate_to(-PI_OVER_TWO);
-    frein();
-    nav.go_to(1.2f - ROBOT_W / 2, -0.35f);
-    frein();
-    nav.go_to(1.0f - ROBOT_W / 2, -0.3f);
-    frein();
-    nav.rotate_to(PI - PI/4);
-    frein();
-    nav.go_to(0.15f, 0.15f);
-    frein();
-    while (1) {
-    }
-  }
-
-  while (1) {
-    frein();
-  }
-  // ===== TESTS =====
-
-  // nav.go_to(1, 0);
-  // wait(0.5);
-  // nav.rotate_by(PI_OVER_TWO);
-  // wait(0.5);
-  // nav.rotate_by(-PI);
-
-  // ==========  CARRÉ  ==============
-
-  // while (1) {
-  //   if (running) {
-
-  //     nav.avancer(0.3);
-  //     nav.rotate_by(PI_OVER_TWO);
+  // int starterCompteur = 0;
+  // while (starterCompteur < 100) {
+  //   motor_l.write(0.0f);
+  //   motor_r.write(0.0f);
+  //   nav.reset_pids();
+  //   if (starterBtn1.read() == 0) {
+  //     starterCompteur++;
+  //   } else {
+  //     starterCompteur = 0;
   //   }
   // }
 
-  //
-  // ======== PID VITESSE ==========
-  //
-  //  direction_l = 1;
-  // direction_r = 0;
-
-  // nav.pid_v_l.reset();
-  // nav.pid_v_r.reset();
-  // nav.pid_v_l.setCommande(0.1f);
-  // nav.pid_v_r.setCommande(0.1f);
-
-  // printf("DEBUT\n");
-
-  // int counter = 0;
-  // while (counter < 1000 && running) {
-  //   float cml = nav.pid_v_l.getConsigne();
-  //   float cmr = nav.pid_v_r.getConsigne();
-
-  //   printf("vl:%f\n", nav.pid_v_l.vitesse);
-
-  //   counter++;
-  //   printf("%f %f\n", cmr, cml);
-
-  //   motor_l.write(cml);
-  //   motor_r.write(cmr);
+  // starterCompteur = 0;
+  // while (starterCompteur < 100) {
+  //   if (starterBtn1.read()) {
+  //     starterCompteur++;
+  //   } else {
+  //     starterCompteur = 0;
+  //   }
   // }
 
-  // printf("FIN_TEST\n");
-
-  // motor_l.write(0.0f);
-  // motor_r.write(0.0f);
+  while (1) {
+    float sum = RX + RY;
+    float commande_r;
+    float commande_l;
+    commande_r = sum == 0 ? 0 : ((float)RX / 128 + (float)RY / 128);
+    commande_l = sum == 0 ? 0 : ((float)RX / 128 - (float)RY / 128);
+    nav.pid_v_l.setCommande(commande_l);
+    nav.pid_v_r.setCommande(commande_r);
+    printf("\r%3d:%3d  ", RX, RY);
+    printf("Consignes : %f %f  ", cml, cmr);
+    printf("Commandes : %f %f                           \r", commande_r,
+           commande_l);
+  }
 }
 
 int main() {
@@ -343,8 +221,8 @@ void test_motors() {
 
   int counter = 0;
   while (counter < 100) {
-    float cml = nav.pid_v_l.getConsigne();
-    float cmr = nav.pid_v_r.getConsigne();
+    cml = nav.pid_v_l.getConsigne();
+    cmr = nav.pid_v_r.getConsigne();
 
     printf("vl:%f\n", nav.pid_v_l.vitesse);
 
@@ -430,6 +308,19 @@ void handleInput() {
 
   if (c == 'f') {
     frein();
+  }
+}
+
+void handleSerial() {
+  char c = bt.getc();
+
+  if (c == 'R') {
+    char c2 = bt.getc();
+    if (c2 == 'X') {
+      RY = bt.getc() - 127;
+    } else if (c2 == 'Y') {
+      RX = bt.getc() - 127;
+    }
   }
 }
 
@@ -545,14 +436,28 @@ void frein() {
   wait(0.1f);
 }
 
-void interrupt_nav_update(void) { nav.update(); }
+void interrupt_nav_update(void) {
+  cml = nav.pid_v_l.getConsigne();
+  cmr = nav.pid_v_r.getConsigne();
 
-void send_signal_exp(){
-  for(int i = 0 ; i< 1000 ; i++){
+  int dir_r = 0;
+  int dir_l = 1;
+
+  limiter_consigne(&cmr, &dir_r);
+  limiter_consigne(&cml, &dir_l);
+
+  direction_l = dir_l;
+  direction_r = dir_r;
+
+  motor_r.write(cmr);
+  motor_l.write(cml);
+}
+
+void send_signal_exp() {
+  for (int i = 0; i < 1000; i++) {
     signalExperience = 1;
     wait_us(300);
     signalExperience = 0;
     wait_us(200);
   }
 }
-

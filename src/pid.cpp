@@ -131,7 +131,7 @@ float PIDDistance::calculerErreur() {
 void PIDDistance::setCommande(float x, float y) {
   commande_x = x;
   commande_y = y;
-  PID::reset();
+  pid::reset();
   this->time.reset();
 }
 

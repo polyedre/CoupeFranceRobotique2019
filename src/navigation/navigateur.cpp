@@ -13,17 +13,16 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
                        Encoder *encod_r) {
   position = _position;
 
-  float p_vitesse = 5;
+  float p_vitesse = 0.2;
   float k = 0.023;
   // FIXME : Trouver bonnes valeurs de pid.
   PIDDistance _pid_d(0.40, 0.001, 0.0, 0.04, 2, position, 0.4f,
                      0.01); // 0.5cm de précision
   PIDAngle _pid_a(0.48, 0.001, 0.0, 0.02, 1, position, 0.1f, 0.01f); // 1 degré
   // PIDAngle _pid_a(0.03, 0.001, 0.001, 0.02, 0, position);
-  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.004, 0, 0.001, 3, encod_l, 0.004,
+  PIDVitesse _pid_v_l(p_vitesse * (1 - k), 0.004, 0, 0.001, 1, encod_l, 0.004,
                       1.0f, 1);
-  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.004, 0, 0.001, 3.
-  , encod_r, 0.004,
+  PIDVitesse _pid_v_r(p_vitesse * (1 + k), 0.004, 0, 0.001, 3., encod_r, 0.004,
                       1.0f, 1);
 
   time.start();
@@ -46,7 +45,6 @@ Navigateur::Navigateur(Position *_position, PwmOut *_m_l, PwmOut *_m_r,
   m_r->period(PWM_PERIOD);
   d_l = _d_l;
   d_r = _d_r;
-
 }
 
 void Navigateur::set_destination(float x, float y) {
@@ -74,108 +72,108 @@ void Navigateur::update() {
   if (time.read_ms() > 100000 + start_time) {
     m_r->write(0.0f);
     m_l->write(0.0f);
-  }else{
+  } else {
 
-  float x = position->get_x();
-  float y = position->get_y();
-  float theta = position->get_theta();
+    float x = position->get_x();
+    float y = position->get_y();
+    float theta = position->get_theta();
 
-  dir_r = 1;
-  dir_l = 0;
+    dir_r = 1;
+    dir_l = 0;
 
-  // Initialisation des consignes
+    // Initialisation des consignes
 
-  float distance_cible = sqrt(carre(x - cible_x) + carre(y - cible_y));
+    float distance_cible = sqrt(carre(x - cible_x) + carre(y - cible_y));
 
-  if (updateAngleCons) {
-    if (pid_d.actionFinished) {
-      compteur++;
-      if (compteur > 50) {
-        actionFinished = 1;
+    if (updateAngleCons) {
+      if (pid_d.actionFinished) {
+        compteur++;
+        if (compteur > 50) {
+          actionFinished = 1;
+        }
+      } else {
+        actionFinished = 0;
+        compteur = 0;
       }
     } else {
-      actionFinished = 0;
-      compteur = 0;
-    }
-  } else {
-    if (pid_a.actionFinished) {
-      compteur++;
-      if (compteur > 10) {
-        actionFinished = 1;
+      if (pid_a.actionFinished) {
+        compteur++;
+        if (compteur > 10) {
+          actionFinished = 1;
+        }
+      } else {
+        actionFinished = 0;
+        compteur = 0;
       }
-    } else {
-      actionFinished = 0;
-      compteur = 0;
     }
-  }
 
-  angle_absolu_destination =
-      modulo_angle_absolu(calculerAngle(x, y, cible_x, cible_y));
+    angle_absolu_destination =
+        modulo_angle_absolu(calculerAngle(x, y, cible_x, cible_y));
 
-  angle_relatif = modulo_angle_relatif(angle_absolu_destination - theta);
+    angle_relatif = modulo_angle_relatif(angle_absolu_destination - theta);
 
-  if ((abs(angle_relatif) < 0.3) || (abs(abs(angle_relatif) - PI) < 0.3)) {
-    triggered = 1;
-    dist_cons = updateAngleCons ? pid_d.getConsigne() : 0;
-  } else {
+    if ((abs(angle_relatif) < 0.3) || (abs(abs(angle_relatif) - PI) < 0.3)) {
+      triggered = 1;
+      dist_cons = updateAngleCons ? pid_d.getConsigne() : 0;
+    } else {
 
-    pid_d.reset();
-  }
+      pid_d.reset();
+    }
 
-  if ((angle_relatif > PI - 0.7) || (angle_relatif < -PI + 0.7)) {
-    sens = ARRIERE;
-  } else {
-    sens = AVANT;
-  }
-  //  Calcul Consigne pour angle avec angle cible rafraichie
-  if (updateAngleCons) {
+    if ((angle_relatif > PI - 0.7) || (angle_relatif < -PI + 0.7)) {
+      sens = ARRIERE;
+    } else {
+      sens = AVANT;
+    }
+    //  Calcul Consigne pour angle avec angle cible rafraichie
+    if (updateAngleCons) {
+      if (sens == AVANT) {
+        pid_a.setCommande(angle_absolu_destination);
+      } else {
+        pid_a.setCommande(modulo_angle_absolu(angle_absolu_destination + PI));
+      }
+    }
+
+    angle_cons = pid_a.getConsigne();
+
+    dist_cons = min(dist_cons, 0.2);
+    angle_cons = min(angle_cons, 0.2f);
+
+    dist_cons = max(dist_cons, -0.2f);
+    angle_cons = max(angle_cons, -0.2f);
+
+    /*
+      Initialisation des directions pour que les moteurs tournent dans
+      le même sens. On inverse ensuite selon la consigne lors de l'appel
+      à `limiter_consigne`.
+      */
     if (sens == AVANT) {
-      pid_a.setCommande(angle_absolu_destination);
+      cmr = dist_cons + angle_cons; // Consigne moteur droit
+      cml = dist_cons - angle_cons; // Consigne moteur gauche
     } else {
-      pid_a.setCommande(modulo_angle_absolu(angle_absolu_destination + PI));
+      cmr = -dist_cons + angle_cons; // Consigne moteur droit
+      cml = -dist_cons - angle_cons; // Consigne moteur gauche
     }
-  }
 
-  angle_cons = pid_a.getConsigne();
+    pid_v_r.setCommande(cmr);
+    pid_v_l.setCommande(cml);
 
-  dist_cons = min(dist_cons, 0.2);
-  angle_cons = min(angle_cons, 0.2f);
+    consigne_motor_r = pid_v_r.getConsigne();
+    consigne_motor_l = pid_v_l.getConsigne();
 
-  dist_cons = max(dist_cons, -0.2f);
-  angle_cons = max(angle_cons, -0.2f);
+    cmr = consigne_motor_r;
+    cml = consigne_motor_l;
 
-  /*
-    Initialisation des directions pour que les moteurs tournent dans
-    le même sens. On inverse ensuite selon la consigne lors de l'appel
-    à `limiter_consigne`.
-    */
-  if (sens == AVANT) {
-    cmr = dist_cons + angle_cons; // Consigne moteur droit
-    cml = dist_cons - angle_cons; // Consigne moteur gauche
-  } else {
-    cmr = -dist_cons + angle_cons; // Consigne moteur droit
-    cml = -dist_cons - angle_cons; // Consigne moteur gauche
-  }
+    limiter_consigne(&cmr, &dir_r);
+    limiter_consigne(&cml, &dir_l);
 
-  pid_v_r.setCommande(cmr);
-  pid_v_l.setCommande(cml);
+    if (move) {
+      m_r->write(cmr);
+      m_l->write(cml);
+    }
 
-  consigne_motor_r = pid_v_r.getConsigne();
-  consigne_motor_l = pid_v_l.getConsigne();
-
-  cmr = consigne_motor_r;
-  cml = consigne_motor_l;
-
-  limiter_consigne(&cmr, &dir_r);
-  limiter_consigne(&cml, &dir_l);
-
-  if (move) {
-    m_r->write(cmr);
-    m_l->write(cml);
-  }
-
-  *d_r = dir_r;
-  *d_l = dir_l;
+    *d_r = dir_r;
+    *d_l = dir_l;
   }
 }
 
